@@ -1,5 +1,4 @@
 //Using SDL and standard IO
-#include "SDL2-2.26.2/include/SDL.h"
 #include "SDL.h"
 #include <iostream>
 
