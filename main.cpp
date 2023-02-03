@@ -4,6 +4,7 @@
 #include "SDL_ttf.h"
 #include <iostream>
 #include <chrono>
+#include <string>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -16,14 +17,30 @@ const int TICKS_PER_SECOND = 60;
 const int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
 const int MAX_FRAMESKIP = 5;
 
+void renderText(SDL_Renderer * renderer, SDL_Rect dest, TTF_Font * font, std::string text) {
+    SDL_Color fg = { 255, 255, 255 };
+    SDL_Surface* surf = TTF_RenderText_Solid(font, text.c_str(), fg);
+
+    dest.w = surf->w;
+    dest.h = surf->h;
+
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+
+    SDL_RenderCopy(renderer, tex, NULL, &dest);
+    SDL_DestroyTexture(tex);
+    SDL_FreeSurface(surf);
+}
+
 int main(int argc, char *argv[]) {
+
+    bool keys[SDL_NUM_SCANCODES] = {false};
 
     // returns zero on success else non-zero
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         printf("error initializing SDL: %s\n", SDL_GetError());
     }
 
-    if(TTF_Init() != 0) {
+    if (TTF_Init() != 0) {
         std::cout << "error initializing SDL_ttf: " << TTF_GetError() << std::endl;
     }
 
@@ -48,25 +65,18 @@ int main(int argc, char *argv[]) {
     // loads image to our graphics hardware memory.
     SDL_Texture *tex = SDL_CreateTextureFromSurface(rend, surface);
 
-    TTF_Font *font = TTF_OpenFont("../OpenSans.ttf", 24);
-    if(font == NULL) {
+    TTF_Font *font = TTF_OpenFont("../OpenSans.ttf", 36);
+    if (font == NULL) {
         std::cout << "error loading font: " << TTF_GetError() << std::endl;
     }
-    SDL_Color white = {255, 255, 255};
-    SDL_Rect textRect = {0, 0, 25, 25};
 
-    SDL_Surface * surfaceMessage = TTF_RenderText_Solid(font, "Test", white);
-    SDL_Texture * messageText = SDL_CreateTextureFromSurface(rend, surfaceMessage);
-
-    // clears main-memory
-    SDL_FreeSurface(surface);
-    SDL_FreeSurface(surfaceMessage);
+    SDL_Rect textRect = {0, 0, 100, 75};
 
     // let us control our image position
     // so that we can move it with our keyboard.
     int square = rand() % TOTAL_TEXTURES;
 
-    SDL_Rect dest = {0, 0, TEXTURE_SIZE, TEXTURE_SIZE};
+    SDL_FRect dest = {0, 0, TEXTURE_SIZE, TEXTURE_SIZE};
     SDL_Rect src = {square * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE};
 
     // adjust height and width of our image box.
@@ -83,51 +93,56 @@ int main(int argc, char *argv[]) {
     int close = 0;
 
     // speed of box
-    int speed = 300;
+    float speed = 300.0f;
 
-    Uint64 lastGameTick = SDL_GetTicks64();
-    int frames = 0;
-    Uint64 elapsed = 0;
+    Uint64 now = SDL_GetPerformanceCounter();
+    Uint64 last;
+    float timestep;
 
     // animation loop
     while (!close) {
-        Uint64 gameTick = SDL_GetTicks64();
-        Uint64 delta = gameTick - lastGameTick;
-        lastGameTick = gameTick;
+        // calculate timesteps
+        last = now;
+        now = SDL_GetPerformanceCounter();
+        timestep = ((float(now - last)) / (float) SDL_GetPerformanceFrequency());
 
-        elapsed += delta;
-        frames++;
-
-        if(elapsed >= 1000) {
-            std::cout << "FPS: " << frames << std::endl;
-            frames = 0;
-            elapsed = 0;
-        }
-
-        SDL_Event event;
+        // for debug
+        float fps = 1.0f / timestep;
 
         // Events management
+        SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
 
-                case SDL_QUIT:
+                case SDL_QUIT: {
                     // handling of close button
                     close = 1;
                     break;
+                }
 
                 case SDL_KEYDOWN: {
                     // keyboard API for key pressed
-                    if (event.key.keysym.scancode == SDL_SCANCODE_W)
-                        dest.y -= speed / 30;
-                    if (event.key.keysym.scancode == SDL_SCANCODE_A)
-                        dest.x -= speed / 30;
-                    if (event.key.keysym.scancode == SDL_SCANCODE_S)
-                        dest.y += speed / 30;
-                    if (event.key.keysym.scancode == SDL_SCANCODE_D)
-                        dest.x += speed / 30;
+                    keys[event.key.keysym.scancode] = true;
+                    break;
+                }
+
+                case SDL_KEYUP: {
+                    // keyboard API for key release
+                    keys[event.key.keysym.scancode] = false;
+                    break;
                 }
             }
         }
+
+        // move the entity
+        if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP])
+            dest.y -= speed * timestep;
+        if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])
+            dest.x -= speed * timestep;
+        if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
+            dest.y += speed * timestep;
+        if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT])
+            dest.x += speed * timestep;
 
         // right boundary
         if (dest.x + dest.w > 1000)
@@ -147,15 +162,14 @@ int main(int argc, char *argv[]) {
 
         // clears the screen
         SDL_RenderClear(rend);
-        SDL_RenderCopy(rend, messageText, NULL, &textRect);
-        SDL_RenderCopy(rend, tex, &src, &dest);
+
+        // draw back to the screen
+        SDL_RenderCopyF(rend, tex, &src, &dest);
+        renderText(rend, textRect, font, "FPS: " + std::to_string(fps));
 
         // triggers the double buffers
         // for multiple rendering
         SDL_RenderPresent(rend);
-
-        // calculates to 60 fps
-        SDL_Delay(1000 / 60);
     }
 
     // destroy texture
