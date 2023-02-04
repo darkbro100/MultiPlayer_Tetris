@@ -60,8 +60,8 @@ namespace Tetris {
         else
             this->initialized = false;
 
-        std::shared_ptr<AppComponent> cmpnPtr = std::make_shared<TextComponent>(this, "test", 0, 0, 200, 75, "Hello, World", "opensans");
-        components.push_back(cmpnPtr);
+        std::shared_ptr<AppComponent> fpsPtr = std::make_shared<FPSComponent>(this, "fps", 0, 0, 200, 75);
+        components.push_back(fpsPtr);
     }
 
     void App::run() {
@@ -156,6 +156,13 @@ namespace Tetris {
         // upper boundary
         if (entityPos.y < 0)
             entityPos.y = 0;
+
+        // update components
+        for(const std::shared_ptr<AppComponent>& component : components) {
+            std::shared_ptr<UpdatingComponent> updatingComponent = std::dynamic_pointer_cast<UpdatingComponent>(component);
+            if(updatingComponent)
+                updatingComponent->update(timestep);
+        }
     }
 
     void App::onRender(float timestep) {
@@ -165,13 +172,12 @@ namespace Tetris {
         SDL_Texture *texture = holder.texture;
         SDL_Rect src = {color * 512, 0, 512, 512};
 
-        std::string fps = "FPS: " + std::to_string(1 / timestep);
-        std::shared_ptr<TextComponent> ptr = std::dynamic_pointer_cast<TextComponent>(components[0]);
-        ptr->setText(fps);
-        ptr->render(renderer);
-
 //        renderText(renderer, loadedFonts[0].font, fps, {255, 255, 255, 255}, {0, 0, 200, 48});
         SDL_RenderCopyF(renderer, texture, &src, &entityPos);
+
+        // render components
+        for(const auto& component : components)
+            component->render(renderer, timestep);
     }
 
     TextureHolder App::getTexture(const std::string & name) {
