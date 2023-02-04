@@ -2,8 +2,7 @@
 // Created by pauli on 2/3/2023.
 //
 #include "AppComponent.h"
-
-#define FPS_SAMPLE_SIZE 1000
+#include "TetrisApp.h"
 
 namespace Tetris {
 
@@ -21,7 +20,7 @@ namespace Tetris {
 
     void TextComponent::render(SDL_Renderer *renderer, float timestep) {
         TTF_Font *font = holder.font;
-        SDL_Rect pos = {x, y, width, height};
+        SDL_FRect pos = {x, y, width, height};
         renderText(renderer, font, text, color, &pos);
     }
 
@@ -42,7 +41,7 @@ namespace Tetris {
     }
 
     void FPSComponent::render(SDL_Renderer *renderer, float timestep) {
-        SDL_Rect pos = {x, y, width, height};
+        SDL_FRect pos = {x, y, width, height};
         renderText(renderer, fontHolder.font, "FPS: " + std::to_string(currentFps), {255, 255, 255, 255}, &pos);
         pos = {x, y + height, width, height};
         renderText(renderer, fontHolder.font, "FPS (avg): " + std::to_string(averageFps), {255, 255, 255, 255}, &pos);

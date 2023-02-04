@@ -3,8 +3,7 @@
 //
 
 #include "TetrisApp.h"
-
-#include <memory>
+#include "EntityComponent.h"
 
 namespace Tetris {
     App::App() {
@@ -62,6 +61,9 @@ namespace Tetris {
 
         std::shared_ptr<AppComponent> fpsPtr = std::make_shared<FPSComponent>(this, "fps", 0, 0, 200, 75);
         components.push_back(fpsPtr);
+
+        std::shared_ptr<AppComponent> entityComponent = std::make_shared<ExampleEntity>(this, "entity", 0, 0, 512 / 6, 512 / 6);
+        components.push_back(entityComponent);
     }
 
     void App::run() {
@@ -130,33 +132,6 @@ namespace Tetris {
     }
 
     void App::onUpdate(float timestep) {
-
-        // move the entity
-        if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP])
-            entityPos.y -= SPEED * timestep;
-        if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])
-            entityPos.x -= SPEED * timestep;
-        if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
-            entityPos.y += SPEED * timestep;
-        if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT])
-            entityPos.x += SPEED * timestep;
-
-        // right boundary
-        if (entityPos.x + entityPos.w > 1000)
-            entityPos.x = 1000 - entityPos.w;
-
-        // left boundary
-        if (entityPos.x < 0)
-            entityPos.x = 0;
-
-        // bottom boundary
-        if (entityPos.y + entityPos.h > 1000)
-            entityPos.y = 1000 - entityPos.h;
-
-        // upper boundary
-        if (entityPos.y < 0)
-            entityPos.y = 0;
-
         // update components
         for(const std::shared_ptr<AppComponent>& component : components) {
             std::shared_ptr<UpdatingComponent> updatingComponent = std::dynamic_pointer_cast<UpdatingComponent>(component);
@@ -166,15 +141,6 @@ namespace Tetris {
     }
 
     void App::onRender(float timestep) {
-        TextureHolder holder = loadedTextures[0];
-        int color = lastFrame % 7;
-
-        SDL_Texture *texture = holder.texture;
-        SDL_Rect src = {color * 512, 0, 512, 512};
-
-//        renderText(renderer, loadedFonts[0].font, fps, {255, 255, 255, 255}, {0, 0, 200, 48});
-        SDL_RenderCopyF(renderer, texture, &src, &entityPos);
-
         // render components
         for(const auto& component : components)
             component->render(renderer, timestep);
@@ -196,5 +162,9 @@ namespace Tetris {
         }
 
         return {};
+    }
+
+    bool App::isKeyPressed(int scanCode) {
+        return keys[scanCode];
     }
 }

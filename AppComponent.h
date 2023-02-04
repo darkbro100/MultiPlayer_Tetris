@@ -4,8 +4,9 @@
 #ifndef MPTETRIS_APPCOMPONENT_H
 #define MPTETRIS_APPCOMPONENT_H
 
+#define FPS_SAMPLE_SIZE 1000
+
 #include "AssetHelper.h"
-#include "TetrisApp.h"
 #include <list>
 #include <numeric>
 
@@ -23,7 +24,7 @@ namespace Tetris {
         virtual void render(SDL_Renderer * renderer, float timestep) = 0;
     protected:
         Tetris::App * app;
-        int x,y,width,height;
+        float x,y,width,height;
         std::string id;
     };
 

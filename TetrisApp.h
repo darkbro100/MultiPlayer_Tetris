@@ -5,7 +5,6 @@
 #ifndef MPTETRIS_TETRISAPP_H
 #define MPTETRIS_TETRISAPP_H
 
-#include "AppComponent.h"
 #include "AssetHelper.h"
 #include "RenderHelper.h"
 #include "SDL.h"
@@ -29,6 +28,7 @@ namespace Tetris {
         void run();
         TextureHolder getTexture(const std::string & name);
         FontHolder getFont(const std::string & name);
+        bool isKeyPressed(int scanCode);
     private:
         void initialize();
         void loadAssets();
