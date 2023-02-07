@@ -5,6 +5,7 @@
 #ifndef MPTETRIS_TETRISAPP_H
 #define MPTETRIS_TETRISAPP_H
 
+#include "MenuState.h"
 #include "AssetHelper.h"
 #include "RenderHelper.h"
 #include "SDL.h"
@@ -16,9 +17,6 @@
 #include <memory>
 
 namespace Tetris {
-
-    // Forward declare here
-    class AppComponent;
 
     class App {
     public:
@@ -43,11 +41,10 @@ namespace Tetris {
         bool keys[SDL_NUM_SCANCODES]{false};
 
         // App control
-        SDL_FRect entityPos = {0, 0, 512 / 6, 512 / 6};
         bool initialized, running;
         std::vector<TextureHolder> loadedTextures;
         std::vector<FontHolder> loadedFonts;
-        std::vector<std::shared_ptr<AppComponent>> components;
+        std::shared_ptr<MenuState> currentState;
 
         // SDL Related variables
         SDL_Window * window;

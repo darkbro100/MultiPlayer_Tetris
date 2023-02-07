@@ -5,8 +5,8 @@
 #include "AssetHelper.h"
 
 namespace Tetris {
-    FontHolder loadFont(const char * path, std::string fontName, int ptSize) {
-        TTF_Font *font = TTF_OpenFont("../OpenSans.ttf", ptSize);
+    FontHolder loadFont(const char *path, const std::string &fontName, int ptSize) {
+        TTF_Font *font = TTF_OpenFont(path, ptSize);
         if (!font) {
             std::cout << "error loading font: " << TTF_GetError() << std::endl;
         }
@@ -19,8 +19,8 @@ namespace Tetris {
         return holder;
     }
 
-    TextureHolder loadTexture(const char *path, std::string textureName, SDL_Renderer * renderer) {
-        SDL_Surface *surface = IMG_Load("../image.png");
+    TextureHolder loadTexture(const char *path, const std::string &textureName, SDL_Renderer *renderer) {
+        SDL_Surface *surface = IMG_Load(path);
         if (!surface) {
             std::cout << "error loading image: " << IMG_GetError() << std::endl;
         }
@@ -34,7 +34,7 @@ namespace Tetris {
         // define struct
         TextureHolder holder;
         holder.texture = tex;
-        holder.name = "tetronimo";
+        holder.name = textureName;
 
         // free the surface
         SDL_FreeSurface(surface);

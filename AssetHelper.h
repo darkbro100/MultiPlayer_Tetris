@@ -20,8 +20,8 @@ namespace Tetris {
         std::string name;
     };
 
-    TextureHolder loadTexture(const char *path, std::string textureName, SDL_Renderer * renderer);
-    FontHolder loadFont(const char * path, std::string fontName, int pt);
+    TextureHolder loadTexture(const char *path, const std::string & textureName, SDL_Renderer * renderer);
+    FontHolder loadFont(const char * path, const std::string & fontName, int pt);
 }
 
 #endif //MPTETRIS_ASSETHELPER_H

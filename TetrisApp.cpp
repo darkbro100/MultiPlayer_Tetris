@@ -3,7 +3,6 @@
 //
 
 #include "TetrisApp.h"
-#include "EntityComponent.h"
 
 namespace Tetris {
     App::App() {
@@ -20,7 +19,7 @@ namespace Tetris {
         SDL_DestroyRenderer(renderer);
 
         // destroy textures
-        for (const TextureHolder& holder : loadedTextures)
+        for (const TextureHolder &holder: loadedTextures)
             SDL_DestroyTexture(holder.texture);
         loadedTextures.clear();
 
@@ -47,23 +46,22 @@ namespace Tetris {
     }
 
     void App::loadAssets() {
-        TextureHolder holder = loadTexture("../image.png", "tetronimo", renderer);
+        // Load block texture
+        TextureHolder holder = loadTexture("../assets/image.png", "tetronimo", renderer);
         if (holder.texture)
             loadedTextures.push_back(holder);
         else
             this->initialized = false;
 
-        FontHolder fontHolder = loadFont("../OpenSans.ttf", "opensans", 24);
+        // Load main font
+        FontHolder fontHolder = loadFont("../assets/OpenSans.ttf", "opensans", 18);
         if (fontHolder.font)
             loadedFonts.push_back(fontHolder);
         else
             this->initialized = false;
 
-        std::shared_ptr<AppComponent> fpsPtr = std::make_shared<FPSComponent>(this, "fps", 0, 0, 200, 75);
-        components.push_back(fpsPtr);
-
-        std::shared_ptr<AppComponent> entityComponent = std::make_shared<ExampleEntity>(this, "entity", 0, 0, 512 / 6, 512 / 6);
-        components.push_back(entityComponent);
+        currentState = std::make_shared<MainMenuState>(this);
+        currentState->loadComponents();
     }
 
     void App::run() {
@@ -132,23 +130,16 @@ namespace Tetris {
     }
 
     void App::onUpdate(float timestep) {
-        // update components
-        for(const std::shared_ptr<AppComponent>& component : components) {
-            std::shared_ptr<UpdatingComponent> updatingComponent = std::dynamic_pointer_cast<UpdatingComponent>(component);
-            if(updatingComponent)
-                updatingComponent->update(timestep);
-        }
+        currentState->update(timestep);
     }
 
     void App::onRender(float timestep) {
-        // render components
-        for(const auto& component : components)
-            component->render(renderer, timestep);
+        currentState->render(renderer, timestep);
     }
 
-    TextureHolder App::getTexture(const std::string & name) {
-        for(auto holder : loadedTextures) {
-            if(holder.name == name)
+    TextureHolder App::getTexture(const std::string &name) {
+        for (auto holder: loadedTextures) {
+            if (holder.name == name)
                 return holder;
         }
 
@@ -156,8 +147,8 @@ namespace Tetris {
     }
 
     FontHolder App::getFont(const std::string &name) {
-        for(auto holder : loadedFonts) {
-            if(holder.name == name)
+        for (auto holder: loadedFonts) {
+            if (holder.name == name)
                 return holder;
         }
 

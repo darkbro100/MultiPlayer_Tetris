@@ -20,9 +20,11 @@ namespace Tetris {
      */
     class AppComponent {
     public:
-        AppComponent(Tetris::App * app, const std::string & id, int x, int y, int width, int height) : app(app), id(id), x(x), y(y), width(width), height(height) {};
+        AppComponent(Tetris::App * app, const std::string & id, int x, int y, int width, int height) : app(app), id(id), x(x), y(y), width(width), height(height), enabled(true) {};
+        bool isEnabled() const;
         virtual void render(SDL_Renderer * renderer, float timestep) = 0;
     protected:
+        bool enabled;
         Tetris::App * app;
         float x,y,width,height;
         std::string id;
@@ -58,6 +60,7 @@ namespace Tetris {
         FontHolder fontHolder;
         float averageFps;
         float currentFps;
+        bool wasPressed;
         std::list<float> fpsCalcs;
     };
 

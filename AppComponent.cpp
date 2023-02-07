@@ -14,6 +14,9 @@ namespace Tetris {
         this->color = {255, 255, 255, 255};
     }
 
+    UpdatingComponent::UpdatingComponent(Tetris::App *app, const std::string &id, int x, int y, int width, int height)
+            : AppComponent(app, id, x, y, width, height) { }
+
     void TextComponent::setText(const std::string &text) {
         this->text = text;
     }
@@ -25,6 +28,13 @@ namespace Tetris {
     }
 
     void FPSComponent::update(float timestep) {
+        bool isPressed = app->isKeyPressed(SDL_SCANCODE_F3);
+        bool wasPressed = this->wasPressed;
+        this->wasPressed = isPressed;
+
+        if (isPressed && !wasPressed)
+            this->enabled = !this->enabled;
+
         float fps = 1.0f / timestep;
         fpsCalcs.push_back(fps);
         if (fpsCalcs.size() > FPS_SAMPLE_SIZE) {
@@ -54,7 +64,7 @@ namespace Tetris {
         fontHolder = app->getFont("opensans");
     }
 
-    UpdatingComponent::UpdatingComponent(Tetris::App *app, const std::string &id, int x, int y, int width, int height)
-            : AppComponent(app, id, x, y, width, height) {
+    bool AppComponent::isEnabled() const {
+        return enabled;
     }
 } // Tetris
