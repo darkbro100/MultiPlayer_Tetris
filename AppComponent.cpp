@@ -15,7 +15,7 @@ namespace Tetris {
     }
 
     UpdatingComponent::UpdatingComponent(Tetris::App *app, const std::string &id, int x, int y, int width, int height)
-            : AppComponent(app, id, x, y, width, height) { }
+            : AppComponent(app, id, x, y, width, height) {}
 
     void TextComponent::setText(const std::string &text) {
         this->text = text;
@@ -66,5 +66,19 @@ namespace Tetris {
 
     bool AppComponent::isEnabled() const {
         return enabled;
+    }
+
+    void ButtonComponent::update(float timestep) {
+
+    }
+
+    ButtonComponent::ButtonComponent(Tetris::App *app, const std::string &id, const std::string &texture, int x, int y,
+                                     int width, int height) : UpdatingComponent(app, id, x, y, width, height) {
+        this->holder = app->getTexture(texture);
+    }
+
+    void ButtonComponent::render(SDL_Renderer *renderer, float timestep) {
+        SDL_FRect dest = {x - (width / 2), y - height, width, height};
+        SDL_RenderCopyF(renderer, holder.texture, nullptr, &dest);
     }
 } // Tetris

@@ -20,18 +20,56 @@ namespace Tetris {
 
     class App {
     public:
+        /**
+         * Constructor for the app. Calls initialize to set up SDL
+         */
         App();
+
+        /**
+         * Destructor for the app. Cleans up all the SDL related stuff
+         */
         ~App();
 
+        /**
+         * Function that runs the app.
+         */
         void run();
-        TextureHolder getTexture(const std::string & name);
-        FontHolder getFont(const std::string & name);
+
+        /**
+         * Gets a texture that has been loaded by the app
+         * @param name The name/id of the texture to get
+         * @return
+         */
+        TextureHolder getTexture(const std::string &name);
+
+        /**
+         * Gets a font from the loaded fonts
+         * @param name The name/id of the font to get
+         * @return Holder for the font
+         */
+        FontHolder getFont(const std::string &name);
+
+        /**
+         * Checks if a key is currently being pressed on the keyboard. These use the SDL_SCANCODE_* constants
+         * @param scanCode The key to check for being pressed. Use the SDL_SCANCODE_* constants
+         * @return True if the key is currently being pressed, false otherwise
+         */
         bool isKeyPressed(int scanCode);
+
+        /**
+         * Constant variables
+         */
+        const static Uint32 RENDER_FLAGS = SDL_RENDERER_ACCELERATED;
+        const static int WINDOW_WIDTH = 1000;
+        const static int WINDOW_HEIGHT = 1000;
+        constexpr static float ENTITY_SPEED = 300.0f;
     private:
         void initialize();
+
         void loadAssets();
 
         void onRender(float timestep);
+
         void onUpdate(float timestep);
 
         // Timings control
@@ -47,14 +85,9 @@ namespace Tetris {
         std::shared_ptr<MenuState> currentState;
 
         // SDL Related variables
-        SDL_Window * window;
-        SDL_Renderer * renderer;
+        SDL_Window *window;
+        SDL_Renderer *renderer;
     };
-
-    static Uint32 RENDER_FLAGS = SDL_RENDERER_ACCELERATED;
-    static int WIDTH = 1000;
-    static int HEIGHT = 1000;
-    static float SPEED = 300.0f;
 }
 
 #endif //MPTETRIS_TETRISAPP_H

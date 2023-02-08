@@ -48,17 +48,34 @@ namespace Tetris {
     void App::loadAssets() {
         // Load block texture
         TextureHolder holder = loadTexture("../assets/image.png", "tetronimo", renderer);
-        if (holder.texture)
-            loadedTextures.push_back(holder);
-        else
+        if (!holder.texture)
             this->initialized = false;
 
         // Load main font
         FontHolder fontHolder = loadFont("../assets/OpenSans.ttf", "opensans", 18);
-        if (fontHolder.font)
-            loadedFonts.push_back(fontHolder);
-        else
+        if (!fontHolder.font)
             this->initialized = false;
+
+        loadedFonts.push_back(fontHolder);
+        loadedTextures.push_back(holder);
+
+        holder = loadTexture("../assets/arrow.png", "arrow", renderer);
+        if(!holder.texture)
+            this->initialized = false;
+
+        loadedTextures.push_back(holder);
+
+        holder = loadTexture("../assets/button_start.png", "start_button", renderer);
+        if(!holder.texture)
+            this->initialized = false;
+
+        loadedTextures.push_back(holder);
+
+        holder = loadTexture("../assets/button_multiplayer.png", "mp_button", renderer);
+        if(!holder.texture)
+            this->initialized = false;
+
+        loadedTextures.push_back(holder);
 
         currentState = std::make_shared<MainMenuState>(this);
         currentState->loadComponents();
@@ -74,7 +91,7 @@ namespace Tetris {
         window = SDL_CreateWindow("GAME",
                                   SDL_WINDOWPOS_CENTERED,
                                   SDL_WINDOWPOS_CENTERED,
-                                  WIDTH, HEIGHT, 0);
+                                  WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
         // creates a renderer to render our images
         renderer = SDL_CreateRenderer(window, -1, RENDER_FLAGS);

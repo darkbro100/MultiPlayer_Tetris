@@ -3,6 +3,7 @@
 //
 
 #include "MenuState.h"
+#include "TetrisApp.h"
 #include <iostream>
 
 namespace Tetris {
@@ -40,6 +41,12 @@ namespace Tetris {
 
         std::shared_ptr<AppComponent> entityComponent = std::make_shared<ExampleEntity>(this->app, "entity", 0, 0, ExampleEntity::TEXTURE_SIZE / 6, ExampleEntity::TEXTURE_SIZE / 6);
         components.push_back(entityComponent);
+
+        std::shared_ptr<AppComponent> button = std::make_shared<ButtonComponent>(this->app, "start_button", "start_button", App::WINDOW_WIDTH / 2, App::WINDOW_HEIGHT / 2, 153, 56);
+        components.push_back(button);
+
+        button = std::make_shared<ButtonComponent>(this->app, "mp_button", "mp_button", App::WINDOW_WIDTH / 2, App::WINDOW_HEIGHT / 2 + 100, 153, 56);
+        components.push_back(button);
     }
 
     void MainMenuState::update(float ts) {

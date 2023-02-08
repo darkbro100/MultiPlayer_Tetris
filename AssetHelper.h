@@ -18,6 +18,7 @@ namespace Tetris {
     struct TextureHolder {
         SDL_Texture * texture;
         std::string name;
+        int width, height;
     };
 
     TextureHolder loadTexture(const char *path, const std::string & textureName, SDL_Renderer * renderer);

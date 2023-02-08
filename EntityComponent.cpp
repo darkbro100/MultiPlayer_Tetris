@@ -4,6 +4,7 @@
 
 #include "EntityComponent.h"
 #include "TetrisApp.h"
+#include "TetrisApp.h"
 
 namespace Tetris {
 
@@ -26,25 +27,25 @@ namespace Tetris {
     void ExampleEntity::update(float timestep) {
         // move the entity
         if (app->isKeyPressed(SDL_SCANCODE_W) || app->isKeyPressed(SDL_SCANCODE_UP))
-            y -= SPEED * timestep;
+            y -= App::ENTITY_SPEED * timestep;
         if (app->isKeyPressed(SDL_SCANCODE_A) || app->isKeyPressed(SDL_SCANCODE_LEFT))
-            x -= SPEED * timestep;
+            x -= App::ENTITY_SPEED * timestep;
         if (app->isKeyPressed(SDL_SCANCODE_S) || app->isKeyPressed(SDL_SCANCODE_DOWN))
-            y += SPEED * timestep;
+            y += App::ENTITY_SPEED * timestep;
         if (app->isKeyPressed(SDL_SCANCODE_D) || app->isKeyPressed(SDL_SCANCODE_RIGHT))
-            x += SPEED * timestep;
+            x += App::ENTITY_SPEED * timestep;
 
         // right boundary
-        if (x + width > WIDTH)
-            x = WIDTH - width;
+        if (x + width > App::WINDOW_WIDTH)
+            x = App::WINDOW_WIDTH - width;
 
         // left boundary
         if (x < 0)
             x = 0;
 
         // bottom boundary
-        if (y + height > HEIGHT)
-            y = HEIGHT - height;
+        if (y + height > App::WINDOW_HEIGHT)
+            y = App::WINDOW_HEIGHT - height;
 
         // upper boundary
         if (y < 0)

@@ -23,6 +23,6 @@ namespace Tetris {
     }
 
     void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst) {
-
+        SDL_RenderCopyF(renderer, texture, src, dst);
     }
 }

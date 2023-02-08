@@ -25,6 +25,8 @@ namespace Tetris {
             std::cout << "error loading image: " << IMG_GetError() << std::endl;
         }
 
+        int width = surface->w;
+        int height = surface->h;
         SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
 
         if (!tex) {
@@ -35,6 +37,8 @@ namespace Tetris {
         TextureHolder holder;
         holder.texture = tex;
         holder.name = textureName;
+        holder.width = width;
+        holder.height = height;
 
         // free the surface
         SDL_FreeSurface(surface);

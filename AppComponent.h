@@ -64,6 +64,15 @@ namespace Tetris {
         std::list<float> fpsCalcs;
     };
 
+    class ButtonComponent : public UpdatingComponent {
+    public:
+        ButtonComponent(Tetris::App *app, const std::string & id, const std::string & texture, int x, int y, int width, int height);
+        void update(float timestep) override;
+        void render(SDL_Renderer * renderer, float timestep) override;
+    protected:
+        TextureHolder holder;
+    };
+
 } // Tetris
 
 #endif //MPTETRIS_APPCOMPONENT_H
