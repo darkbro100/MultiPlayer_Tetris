@@ -60,7 +60,5 @@ namespace Tetris {
         SDL_Rect src = {0, 0, holder.width, holder.height};
         SDL_Rect dst = {App::WINDOW_WIDTH / 2 - 100, App::WINDOW_HEIGHT / 2 + 100 * selectedButton, 100, 100};
         renderTexture(renderer, holder.texture, &src, &dst);
-
-        // i want to kill myself
     }
 }
