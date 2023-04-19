@@ -69,7 +69,6 @@ namespace Tetris {
     }
 
     void ButtonComponent::update(float timestep) {
-
     }
 
     ButtonComponent::ButtonComponent(Tetris::App *app, const std::string &id, const std::string &texture, int x, int y,

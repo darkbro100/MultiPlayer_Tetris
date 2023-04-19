@@ -42,11 +42,11 @@ namespace Tetris {
         std::shared_ptr<AppComponent> entityComponent = std::make_shared<ExampleEntity>(this->app, "entity", 0, 0, ExampleEntity::TEXTURE_SIZE / 6, ExampleEntity::TEXTURE_SIZE / 6);
         components.push_back(entityComponent);
 
-        std::shared_ptr<AppComponent> button = std::make_shared<ButtonComponent>(this->app, "start_button", "start_button", App::WINDOW_WIDTH / 2, App::WINDOW_HEIGHT / 2, 153, 56);
-        components.push_back(button);
+        std::shared_ptr<ButtonComponent> button = std::make_shared<ButtonComponent>(this->app, "start_button", "start_button", App::WINDOW_WIDTH / 2, App::WINDOW_HEIGHT / 2, 153, 56);
+        buttons.push_back(button);
 
         button = std::make_shared<ButtonComponent>(this->app, "mp_button", "mp_button", App::WINDOW_WIDTH / 2, App::WINDOW_HEIGHT / 2 + 100, 153, 56);
-        components.push_back(button);
+        buttons.push_back(button);
     }
 
     void MainMenuState::update(float ts) {
@@ -55,5 +55,12 @@ namespace Tetris {
 
     void MainMenuState::render(SDL_Renderer *renderer, float ts) {
         MenuState::render(renderer, ts);
+
+        TextureHolder holder = app->getTexture("arrow");
+        SDL_Rect src = {0, 0, holder.width, holder.height};
+        SDL_Rect dst = {App::WINDOW_WIDTH / 2 - 100, App::WINDOW_HEIGHT / 2 + 100 * selectedButton, 100, 100};
+        renderTexture(renderer, holder.texture, &src, &dst);
+
+        // i want to kill myself
     }
 }

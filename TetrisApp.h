@@ -38,7 +38,7 @@ namespace Tetris {
         /**
          * Gets a texture that has been loaded by the app
          * @param name The name/id of the texture to get
-         * @return
+         * @return Holder for the texture
          */
         TextureHolder getTexture(const std::string &name);
 

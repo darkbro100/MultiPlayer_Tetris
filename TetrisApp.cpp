@@ -59,6 +59,7 @@ namespace Tetris {
         loadedFonts.push_back(fontHolder);
         loadedTextures.push_back(holder);
 
+        // Load textures for buttons & arrow
         holder = loadTexture("../assets/arrow.png", "arrow", renderer);
         if(!holder.texture)
             this->initialized = false;
@@ -77,6 +78,7 @@ namespace Tetris {
 
         loadedTextures.push_back(holder);
 
+        // Load main menu state, set that as the current state
         currentState = std::make_shared<MainMenuState>(this);
         currentState->loadComponents();
     }

@@ -6,6 +6,7 @@
 #define MPTETRIS_MENUSTATE_H
 
 #include "EntityComponent.h"
+#include <vector>
 #include <memory>
 
 namespace Tetris {
@@ -41,6 +42,9 @@ namespace Tetris {
         void loadComponents() override;
         void update(float ts) override;
         void render(SDL_Renderer *renderer, float ts) override;
+    private:
+        std::vector<std::shared_ptr<ButtonComponent>> buttons;
+        int selectedButton = 0;
     };
 }
 
