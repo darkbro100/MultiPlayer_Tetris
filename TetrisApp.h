@@ -36,6 +36,12 @@ namespace Tetris {
         void run();
 
         /**
+         * Changes the current Menu that is being displayed/updated for the App.
+         * @param newState The new MenuState to display/update
+         */
+        void App::changeState(const std::shared_ptr<MenuState> & newState);
+
+        /**
          * Gets a texture that has been loaded by the app
          * @param name The name/id of the texture to get
          * @return Holder for the texture

@@ -177,4 +177,8 @@ namespace Tetris {
     bool App::isKeyPressed(int scanCode) {
         return keys[scanCode];
     }
+
+    void App::changeState(const std::shared_ptr<MenuState> & newState) {
+        this->currentState = newState;
+    }
 }

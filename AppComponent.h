@@ -9,6 +9,7 @@
 #include "AssetHelper.h"
 #include <list>
 #include <numeric>
+#include <functional>
 
 namespace Tetris {
 
@@ -23,6 +24,10 @@ namespace Tetris {
         AppComponent(Tetris::App * app, const std::string & id, int x, int y, int width, int height) : app(app), id(id), x(x), y(y), width(width), height(height), enabled(true) {};
         bool isEnabled() const;
         virtual void render(SDL_Renderer * renderer, float timestep) = 0;
+        float getX() const;
+        float getY() const;
+        float getWidth() const;
+        float getHeight() const;
     protected:
         bool enabled;
         Tetris::App * app;
@@ -67,9 +72,14 @@ namespace Tetris {
     class ButtonComponent : public UpdatingComponent {
     public:
         ButtonComponent(Tetris::App *app, const std::string & id, const std::string & texture, int x, int y, int width, int height);
-        void update(float timestep) override;
         void render(SDL_Renderer * renderer, float timestep) override;
+        void update(float timestep) override;
+
+        void onClick(std::function<void()> callback) { onClickCallback = std::move(callback); }
+        void click();
     protected:
+        std::function<void()> onClickCallback = [&](){ };
+
         TextureHolder holder;
     };
 

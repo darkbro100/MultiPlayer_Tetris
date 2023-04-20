@@ -68,7 +68,20 @@ namespace Tetris {
         return enabled;
     }
 
-    void ButtonComponent::update(float timestep) {
+    float AppComponent::getX() const {
+        return x;
+    }
+
+    float AppComponent::getY() const {
+        return y;
+    }
+
+    float AppComponent::getWidth() const {
+        return width;
+    }
+
+    float AppComponent::getHeight() const {
+        return height;
     }
 
     ButtonComponent::ButtonComponent(Tetris::App *app, const std::string &id, const std::string &texture, int x, int y,
@@ -80,4 +93,12 @@ namespace Tetris {
         SDL_FRect dest = {x - (width / 2), y - height, width, height};
         SDL_RenderCopyF(renderer, holder.texture, nullptr, &dest);
     }
+
+    void ButtonComponent::update(float timestep) { }
+
+    void ButtonComponent::click() {
+        if (onClickCallback != nullptr)
+            onClickCallback();
+    }
+
 } // Tetris
