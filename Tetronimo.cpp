@@ -7,10 +7,10 @@
 
 namespace Tetris {
 
-    const unsigned int *Tetromino::SHAPES[Tetromino::TOTAL_TETROMINOS] = {Tetromino::I_SHAPE, Tetromino::J_SHAPE,
-                                                                          Tetromino::L_SHAPE, Tetromino::O_SHAPE,
+    const unsigned int *Tetromino::SHAPES[Tetromino::TOTAL_TETROMINOS] = {Tetromino::O_SHAPE, Tetromino::Z_SHAPE,
                                                                           Tetromino::S_SHAPE, Tetromino::T_SHAPE,
-                                                                          Tetromino::Z_SHAPE};
+                                                                          Tetromino::L_SHAPE, Tetromino::I_SHAPE,
+                                                                          Tetromino::J_SHAPE};
 
     int Tetromino::rotate(int x, int y, int rotation) {
         int index = y * TETROMINO_SIZE + x;

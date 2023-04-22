@@ -8,7 +8,7 @@
 namespace Tetris {
 
     GameMenuStateSP::GameMenuStateSP(App *app) : MenuState(app) {
-        this->currentPiece = 0;
+        this->currentPiece = 5;
         this->currentX = FIELD_WIDTH / 2;
         this->currentY = 0;
         this->currentRotation = 0;

@@ -21,23 +21,23 @@ namespace Tetris {
         const static int TOTAL_TETROMINOS = 7;
 
         constexpr static unsigned int I_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
-                1, 0, 0, 0,
-                1, 0, 0, 0,
-                1, 0, 0, 0,
-                1, 0, 0, 0
-        };
-
-        constexpr static unsigned int J_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
-                1, 1, 1, 0,
-                0, 0, 1, 0,
+                0, 0, 0, 0,
+                1, 1, 1, 1,
                 0, 0, 0, 0,
                 0, 0, 0, 0
         };
 
+        constexpr static unsigned int J_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
+                0, 0, 0, 0,
+                1, 1, 1, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 0
+        };
+
         constexpr static unsigned int L_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
+                0, 0, 0, 0,
                 0, 1, 1, 1,
                 0, 1, 0, 0,
-                0, 0, 0, 0,
                 0, 0, 0, 0
         };
 
