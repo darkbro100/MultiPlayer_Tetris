@@ -39,6 +39,15 @@ namespace Tetris {
      * @param dst Destination rectangle. If null, the entire renderer will be used.
      */
     void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst);
+
+    /**
+     * Render a texture to a given renderer.
+     * @param renderer Renderer to render the texture on
+     * @param texture Texture to render
+     * @param src Source rectangle. If null, the entire texture will be rendered.
+     * @param dst Destination rectangle. If null, the entire renderer will be used.
+     */
+    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
 }
 
 #endif //MPTETRIS_RENDERHELPER_H

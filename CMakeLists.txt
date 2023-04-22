@@ -13,5 +13,5 @@ find_package(SDL2_image REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIRS})
 
-add_executable(MPTetris AssetHelper.h RenderHelper.h AppComponent.h EntityComponent.h TetrisApp.h MenuState.cpp MenuState.h AssetHelper.cpp RenderHelper.cpp AppComponent.cpp EntityComponent.cpp TetrisApp.cpp main.cpp)
+add_executable(MPTetris GameMenuStateSP.h GameMenuStateSP.cpp Tetronimo.h Tetronimo.cpp AssetHelper.h RenderHelper.h AppComponent.h EntityComponent.h TetrisApp.h MenuState.cpp MenuState.h AssetHelper.cpp RenderHelper.cpp AppComponent.cpp EntityComponent.cpp TetrisApp.cpp main.cpp)
 target_link_libraries(MPTetris SDL2::Main SDL2::Image SDL2::TTF)

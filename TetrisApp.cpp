@@ -138,6 +138,7 @@ namespace Tetris {
             onUpdate(timestep);
 
             // clears the screen
+            SDL_SetRenderDrawColor(renderer, 0,0,0,0);
             SDL_RenderClear(renderer);
 
             // render the app
