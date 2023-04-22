@@ -32,7 +32,7 @@ namespace Tetris {
         int currentRotation;
         int currentX, currentY;
 
-        bool test;
+        bool wasPressed[SDL_NUM_SCANCODES]{false};
     };
 
 }

@@ -88,6 +88,15 @@ namespace Tetris {
          * @return The rotated index for the shape
          */
         static int rotate(int x, int y, int rotation);
+
+        /**
+         * Determines if a piece, given a rotation, can fit in the field
+         * @param shapeId
+         * @param rotation
+         * @param field
+         * @return
+         */
+        static bool canFit(int shapeId, int x, int y, int rotation, const unsigned int * field);
     };
 
 

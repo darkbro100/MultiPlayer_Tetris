@@ -37,12 +37,36 @@ namespace Tetris {
     void GameMenuStateSP::update(float ts) {
         MenuState::update(ts);
 
-        bool isPressed = app->isKeyPressed(SDL_SCANCODE_LEFT);
-        bool wasPressed = this->test;
-        this->test = isPressed;
+        // Updating variables based on input
+        bool isRotatePressed = app->isKeyPressed(SDL_SCANCODE_Z);
+        bool isLeftPressed = app->isKeyPressed(SDL_SCANCODE_LEFT);
+        bool isRightPressed = app->isKeyPressed(SDL_SCANCODE_RIGHT);
+        bool isDownPressed = app->isKeyPressed(SDL_SCANCODE_DOWN);
 
-        if(isPressed && !wasPressed && app->isKeyPressed(SDL_SCANCODE_LEFT)) {
-            currentRotation = (currentRotation + 1) % 4;
+        bool wasRotatePressed = this->wasPressed[SDL_SCANCODE_Z];
+        bool wasDownPressed = this->wasPressed[SDL_SCANCODE_DOWN];
+        bool wasLeftPressed = this->wasPressed[SDL_SCANCODE_LEFT];
+        bool wasRightPressed = this->wasPressed[SDL_SCANCODE_RIGHT];
+
+        this->wasPressed[SDL_SCANCODE_Z] = isRotatePressed;
+        this->wasPressed[SDL_SCANCODE_LEFT] = isLeftPressed;
+        this->wasPressed[SDL_SCANCODE_RIGHT] = isRightPressed;
+        this->wasPressed[SDL_SCANCODE_DOWN] = isDownPressed;
+
+        // Input handling for moving forward/backward/down
+        if (isLeftPressed && !wasLeftPressed && Tetromino::canFit(currentPiece, currentX - 1, currentY, currentRotation, field)) {
+            currentX--;
+        } else if (isRightPressed && !wasRightPressed && Tetromino::canFit(currentPiece, currentX + 1, currentY, currentRotation, field)) {
+            currentX++;
+        } else if (isDownPressed && !wasDownPressed && Tetromino::canFit(currentPiece, currentX, currentY + 1, currentRotation, field)) {
+            currentY++;
+        }
+
+        // Input handling for rotating
+        int nextRotation = (currentRotation + 1) % 4;
+        if (isRotatePressed && !wasRotatePressed &&
+            Tetromino::canFit(currentPiece, currentX, currentY, nextRotation, field)) {
+            currentRotation = nextRotation;
         }
     }
 
@@ -94,13 +118,13 @@ namespace Tetris {
         }
 
         // Render current piece in
-        for(int pieceX = 0; pieceX < Tetromino::TETROMINO_SIZE; pieceX++) {
-            for(int pieceY = 0; pieceY < Tetromino::TETROMINO_SIZE; pieceY++) {
-                const unsigned int * shape = Tetromino::getShape(currentPiece);
+        for (int pieceX = 0; pieceX < Tetromino::TETROMINO_SIZE; pieceX++) {
+            for (int pieceY = 0; pieceY < Tetromino::TETROMINO_SIZE; pieceY++) {
+                const unsigned int *shape = Tetromino::getShape(currentPiece);
                 int index = Tetromino::rotate(pieceX, pieceY, currentRotation);
                 unsigned int value = shape[index];
 
-                if(value != 0) {
+                if (value != 0) {
                     int posX = startX + (currentX + pieceX) * size;
                     int posY = startY + (currentY + pieceY) * size;
 
