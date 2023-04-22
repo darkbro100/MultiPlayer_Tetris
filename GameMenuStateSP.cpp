@@ -223,6 +223,7 @@ namespace Tetris {
                     SDL_Rect srcRect = {textureX + borderWidth, borderWidth, 460, 460};
                     SDL_Rect dstRec = {posX, posY, size, size};
 
+                    // If a line exists on this row, use the boundary texture instead of the normal texture, otherwise draw it normally
                     if(std::count(lines.begin(), lines.end(), y) > 0) {
                         textureX = textureSize * 7;
                         srcRect = {textureX + borderWidth, borderWidth, 460, 460};
