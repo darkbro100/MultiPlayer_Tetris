@@ -37,8 +37,9 @@ namespace Tetris {
      * @param texture Texture to render
      * @param src Source rectangle. If null, the entire texture will be rendered.
      * @param dst Destination rectangle. If null, the entire renderer will be used.
+     * @param alpha Alpha value of the texture. 255 is opaque, 0 is transparent.
      */
-    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst);
+    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst, Uint8 alpha = 255);
 
     /**
      * Render a texture to a given renderer.
@@ -46,8 +47,9 @@ namespace Tetris {
      * @param texture Texture to render
      * @param src Source rectangle. If null, the entire texture will be rendered.
      * @param dst Destination rectangle. If null, the entire renderer will be used.
+     * @param alpha Alpha value of the texture. 255 is opaque, 0 is transparent.
      */
-    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
+    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, Uint8 alpha = 255);
 }
 
 #endif //MPTETRIS_RENDERHELPER_H

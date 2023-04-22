@@ -47,12 +47,12 @@ namespace Tetris {
 
     void App::loadAssets() {
         // Load block texture
-        TextureHolder holder = loadTexture("../assets/image.png", "tetronimo", renderer);
+        TextureHolder holder = loadTexture("./assets/image.png", "tetronimo", renderer);
         if (!holder.texture)
             this->initialized = false;
 
         // Load main font
-        FontHolder fontHolder = loadFont("../assets/OpenSans.ttf", "opensans", 18);
+        FontHolder fontHolder = loadFont("./assets/OpenSans.ttf", "opensans", 18);
         if (!fontHolder.font)
             this->initialized = false;
 
@@ -60,19 +60,19 @@ namespace Tetris {
         loadedTextures.push_back(holder);
 
         // Load textures for buttons & arrow
-        holder = loadTexture("../assets/arrow.png", "arrow", renderer);
+        holder = loadTexture("./assets/arrow.png", "arrow", renderer);
         if(!holder.texture)
             this->initialized = false;
 
         loadedTextures.push_back(holder);
 
-        holder = loadTexture("../assets/button_start.png", "start_button", renderer);
+        holder = loadTexture("./assets/button_start.png", "start_button", renderer);
         if(!holder.texture)
             this->initialized = false;
 
         loadedTextures.push_back(holder);
 
-        holder = loadTexture("../assets/button_multiplayer.png", "mp_button", renderer);
+        holder = loadTexture("./assets/button_multiplayer.png", "mp_button", renderer);
         if(!holder.texture)
             this->initialized = false;
 

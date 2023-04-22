@@ -29,11 +29,11 @@ namespace Tetris {
         }
     }
 
-    const unsigned int *Tetromino::getShape(int id) {
+    const unsigned int *Tetromino::getShape(unsigned int id) {
         return SHAPES[id];
     }
 
-    bool Tetromino::canFit(int shapeId, int x, int y, int rotation, const unsigned int *field) {
+    bool Tetromino::canFit(unsigned int shapeId, int x, int y, int rotation, const unsigned int *field) {
         for (int i = 0; i < TETROMINO_SIZE; i++) {
             for (int j = 0; j < TETROMINO_SIZE; j++) {
                 int index = rotate(i, j, rotation);
@@ -47,5 +47,20 @@ namespace Tetris {
             }
         }
         return true;
+    }
+
+    void Tetromino::place(unsigned int shapeId, int x, int y, int rotation, unsigned int *field) {
+        for (int i = 0; i < TETROMINO_SIZE; i++) {
+            for (int j = 0; j < TETROMINO_SIZE; j++) {
+                int index = rotate(i, j, rotation);
+                int pX = x + i;
+                int pY = y + j;
+
+                int fieldIndex = pX + (pY * GameMenuStateSP::FIELD_WIDTH);
+
+                if (SHAPES[shapeId][index] != 0)
+                    field[fieldIndex] = shapeId + 1; // need to + 1 because EMPTY_ID starts at 0
+            }
+        }
     }
 }

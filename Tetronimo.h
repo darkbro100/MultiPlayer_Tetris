@@ -77,7 +77,7 @@ namespace Tetris {
          * @param id Id of the shape
          * @return The pointer to the array of the shape
          */
-        const static unsigned int * getShape(int id);
+        const static unsigned int * getShape(unsigned int id);
 
         /**
          * Rotates a shape by 90 degrees clockwise
@@ -96,7 +96,17 @@ namespace Tetris {
          * @param field
          * @return
          */
-        static bool canFit(int shapeId, int x, int y, int rotation, const unsigned int * field);
+        static bool canFit(unsigned int shapeId, int x, int y, int rotation, const unsigned int * field);
+
+        /**
+         * Places a piece in the field
+         * @param shapeId ID of the shape
+         * @param x X of the shape
+         * @param y Y of the shape
+         * @param rotation Rotation of the shape
+         * @param field Pointer to the field
+         */
+        static void place(unsigned int shapeId, int x, int y, int rotation, unsigned int * field);
     };
 
 

@@ -22,11 +22,27 @@ namespace Tetris {
         SDL_DestroyTexture(texture);
     }
 
-    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst) {
+    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst, Uint8 alpha) {
+        if(alpha < 255) {
+            SDL_SetTextureAlphaMod(texture, alpha);
+        }
         SDL_RenderCopyF(renderer, texture, src, dst);
+
+        // Reset the alpha
+        if(alpha < 255) {
+            SDL_SetTextureAlphaMod(texture, 255);
+        }
     }
 
-    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst) {
+    void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, Uint8 alpha) {
+        if(alpha < 255) {
+            SDL_SetTextureAlphaMod(texture, alpha);
+        }
         SDL_RenderCopy(renderer, texture, src, dst);
+
+        // Reset the alpha
+        if(alpha < 255) {
+            SDL_SetTextureAlphaMod(texture, 255);
+        }
     }
 }
