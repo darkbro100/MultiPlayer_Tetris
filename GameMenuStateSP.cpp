@@ -17,8 +17,15 @@ namespace Tetris {
         this->currentX = FIELD_WIDTH / 2;
         this->currentY = 0;
         this->currentRotation = 0;
+        this->storedRotation = 0;
         this->currentSpeed = 0.7f;
         this->currentSpeedTimer = 0.0f;
+        this->linesCreated = 0;
+        this->score = 0;
+
+        this->leftDelay = INPUT_DELAY;
+        this->rightDelay = INPUT_DELAY;
+        this->downDelay = INPUT_DELAY;
 
         this->field = new unsigned int[FIELD_WIDTH * FIELD_HEIGHT];
 
@@ -67,6 +74,9 @@ namespace Tetris {
                     }
                 }
 
+                // Update lines cleared & clear the vector
+                linesCreated += lines.size();
+                score += (1 << lines.size()) * 100;
                 lines.clear();
 
                 // Update timings to be the normal game timings TODO: store previous timings
@@ -77,61 +87,8 @@ namespace Tetris {
             return;
         }
 
-        // Updating variables based on input
-        bool isInstantPressed = app->isKeyPressed(INSTANT_DROP_KEY);
-        bool isRotatePressed = app->isKeyPressed(ROTATE_KEY);
-        bool isRotateBackwardsPressed = app->isKeyPressed(ROTATE_BACKWARDS_KEY);
-        bool isLeftPressed = app->isKeyPressed(LEFT_KEY);
-        bool isRightPressed = app->isKeyPressed(RIGHT_KEY);
-        bool isDownPressed = app->isKeyPressed(DOWN_KEY);
-
-        bool wasInstantPressed = this->isInstantDropPressed;
-        bool wasRotatePressed = this->isRotatePressed;
-        bool wasRotateBackwardsPressed = this->isRotateBackwardsPressed;
-        this->isRotatePressed = isRotatePressed;
-        this->isRotateBackwardsPressed = isRotateBackwardsPressed;
-        this->isInstantDropPressed = isInstantPressed;
-
-        bool canPressRotate = isRotatePressed && !wasRotatePressed;
-        bool canPressRotateBack = isRotateBackwardsPressed && !wasRotateBackwardsPressed;
-        bool canPressLeft = lastPress.count(LEFT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[LEFT_KEY];
-        bool canPressRight = lastPress.count(RIGHT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[RIGHT_KEY];
-        bool canPressDown = lastPress.count(DOWN_KEY) == 0 || SDL_GetTicks64() > this->lastPress[DOWN_KEY];
-
-        // Input handling for moving forward/backward/down
-        if (isLeftPressed && canPressLeft && Tetromino::canFit(currentPiece, currentX - 1, currentY, currentRotation, field)) {
-            currentX--;
-            lastPress[LEFT_KEY] = SDL_GetTicks64() + INPUT_DELAY;
-        }
-
-        if (isRightPressed && canPressRight && Tetromino::canFit(currentPiece, currentX + 1, currentY, currentRotation, field)) {
-            currentX++;
-            lastPress[RIGHT_KEY] = SDL_GetTicks64() + INPUT_DELAY;
-        }
-
-        if (isDownPressed && canPressDown && Tetromino::canFit(currentPiece, currentX, currentY + 1, currentRotation, field)) {
-            currentY++;
-            lastPress[DOWN_KEY] = SDL_GetTicks64() + INPUT_DELAY;
-        }
-
-        // Input handling for rotating
-        int nextRotation = (currentRotation + 1) % 4;
-        if (canPressRotate && Tetromino::canFit(currentPiece, currentX, currentY, nextRotation, field)) {
-            currentRotation = nextRotation;
-        }
-
-        nextRotation = currentRotation == 0 ? 3 : currentRotation - 1;
-        if (canPressRotateBack && Tetromino::canFit(currentPiece, currentX, currentY, nextRotation, field)) {
-            currentRotation = nextRotation;
-        }
-
-        // When spacebar is pressed, the piece is dropped instantly and locked to the board
-        if(isInstantPressed && !wasInstantPressed) {
-            while(Tetromino::canFit(currentPiece, currentX, currentY + 1, currentRotation, field)) {
-                currentY++;
-            }
-            currentSpeedTimer = currentSpeed;
-        }
+        // Check inputs
+        checkInputs();
 
         // Game timings
         currentSpeedTimer += ts;
@@ -163,7 +120,7 @@ namespace Tetris {
                     if(line) {
                         lines.push_back(currentY + y);
                         currentSpeedTimer = 0.0f;
-                        currentSpeed = 0.5f;
+                        currentSpeed = 0.25f;
                     }
                 }
 
@@ -172,11 +129,14 @@ namespace Tetris {
                 currentX = FIELD_WIDTH / 2;
                 currentY = 0;
                 currentRotation = 0;
+                storedRotation = 0;
                 currentSpeedTimer = 0.0f;
+                leftDelay = INPUT_DELAY;
+                rightDelay = INPUT_DELAY;
+                downDelay = INPUT_DELAY;
 
-                if(!Tetromino::canFit(currentPiece, currentX, currentY, currentRotation, field)) {
+                if(!Tetromino::canFit(currentPiece, currentX, currentY, currentRotation, field))
                     gameOver = true;
-                }
             }
         }
     }
@@ -284,5 +244,106 @@ namespace Tetris {
                 }
             }
         }
+
+        // Render the lines
+        FontHolder fontHolder = app->getFont("opensans");
+        SDL_Rect textRect = {startX + (FIELD_WIDTH * size) + 10, startY, 150, 75};
+        renderText(renderer, fontHolder.font, "Lines: " + std::to_string(linesCreated), {255, 255, 255, 255}, &textRect);
+
+        // Render the score
+        textRect = {startX + (FIELD_WIDTH * size) + 10, startY + 100, 150, 75};
+        renderText(renderer, fontHolder.font, "Score: " + std::to_string(score), {255, 255, 255, 255}, &textRect);
+    }
+
+    void GameMenuStateSP::checkInputs() {
+        // Updating variables based on input
+        bool isInstantPressed = app->isKeyPressed(INSTANT_DROP_KEY);
+        bool isRotatePressed = app->isKeyPressed(ROTATE_KEY);
+        bool isLeftPressed = app->isKeyPressed(LEFT_KEY);
+        bool isRightPressed = app->isKeyPressed(RIGHT_KEY);
+        bool isDownPressed = app->isKeyPressed(DOWN_KEY);
+
+        bool wasInstantPressed = this->wasInstantPressed;
+        bool wasRotatePressed = this->wasRotatePressed;
+        bool wasLeftPressed = this->wasLeftPressed;
+        bool wasRightPressed = this->wasRightPressed;
+        bool wasDownPressed = this->wasDownPressed;
+
+        this->wasLeftPressed = isLeftPressed;
+        this->wasRightPressed = isRightPressed;
+        this->wasDownPressed = isDownPressed;
+        this->wasRotatePressed = isRotatePressed;
+        this->wasInstantPressed = isInstantPressed;
+
+        bool canPressRotate = isRotatePressed && !wasRotatePressed;
+        bool canPressLeft = lastPress.count(LEFT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[LEFT_KEY];
+        bool canPressRight = lastPress.count(RIGHT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[RIGHT_KEY];
+        bool canPressDown = lastPress.count(DOWN_KEY) == 0 || SDL_GetTicks64() > this->lastPress[DOWN_KEY];
+
+        // Input handling for moving forward/backward/down
+        if(isLeftPressed) {
+
+            // means that they are just tapping the arrow key once
+            if(!wasLeftPressed && Tetromino::canFit(currentPiece, currentX - 1, currentY, currentRotation, field)) {
+                currentX--;
+                lastPress[LEFT_KEY] = SDL_GetTicks64() + leftDelay;
+            } else if(wasLeftPressed && canPressLeft && Tetromino::canFit(currentPiece, currentX - 1, currentY, currentRotation, field)) {
+                currentX--;
+                lastPress[LEFT_KEY] = SDL_GetTicks64() + leftDelay;
+                leftDelay /= leftDelay > 0 ? 2 : 1;
+            }
+
+        } else {
+            leftDelay = INPUT_DELAY;
+        }
+
+        if(isRightPressed) {
+
+            // means that they are just tapping the arrow key once
+            if(!wasRightPressed && Tetromino::canFit(currentPiece, currentX + 1, currentY, currentRotation, field)) {
+                currentX++;
+                lastPress[RIGHT_KEY] = SDL_GetTicks64() + rightDelay;
+            } else if(wasRightPressed && canPressRight && Tetromino::canFit(currentPiece, currentX + 1, currentY, currentRotation, field)) {
+                currentX++;
+                lastPress[RIGHT_KEY] = SDL_GetTicks64() + rightDelay;
+                rightDelay /= rightDelay > 0 ? 2 : 1;
+            }
+
+        } else {
+            rightDelay = INPUT_DELAY;
+        }
+
+        if(isDownPressed) {
+
+            // means that they are just tapping the arrow key once
+            if(!wasDownPressed && Tetromino::canFit(currentPiece, currentX, currentY + 1, currentRotation, field)) {
+                currentY++;
+                lastPress[DOWN_KEY] = SDL_GetTicks64() + downDelay;
+            } else if(wasDownPressed && canPressDown && Tetromino::canFit(currentPiece, currentX, currentY + 1, currentRotation, field)) {
+                currentY++;
+                lastPress[DOWN_KEY] = SDL_GetTicks64() + downDelay;
+                downDelay /= downDelay > 0 ? 2 : 1;
+            }
+
+        } else {
+            downDelay = INPUT_DELAY;
+        }
+
+        // Input handling for rotating
+        if (canPressRotate) {
+            storedRotation = (storedRotation + 1) % 4;
+            if(Tetromino::canFit(currentPiece, currentX, currentY, storedRotation, field)) {
+                currentRotation = storedRotation;
+            }
+        }
+
+        // When spacebar is pressed, the piece is dropped instantly and locked to the board
+        if(isInstantPressed && !wasInstantPressed) {
+            while(Tetromino::canFit(currentPiece, currentX, currentY + 1, currentRotation, field)) {
+                currentY++;
+            }
+            currentSpeedTimer = currentSpeed;
+        }
+
     }
 }

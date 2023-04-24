@@ -23,14 +23,13 @@ namespace Tetris {
 
     class GameMenuStateSP : public MenuState {
     public:
-        const static int INPUT_DELAY = 100;
-        const static int FIELD_WIDTH = 10;
-        const static int FIELD_HEIGHT = 20;
+        const static int INPUT_DELAY = 75;
+        const static int FIELD_WIDTH = 12;
+        const static int FIELD_HEIGHT = 21;
         const static int BOUNDARY_ID = 8;
         const static int EMPTY_ID = 0;
 
-        const static int ROTATE_KEY = SDL_SCANCODE_Z;
-        const static int ROTATE_BACKWARDS_KEY = SDL_SCANCODE_X;
+        const static int ROTATE_KEY = SDL_SCANCODE_UP;
         const static int LEFT_KEY = SDL_SCANCODE_LEFT;
         const static int RIGHT_KEY = SDL_SCANCODE_RIGHT;
         const static int DOWN_KEY = SDL_SCANCODE_DOWN;
@@ -41,11 +40,17 @@ namespace Tetris {
         void update(float ts) override;
         void render(SDL_Renderer *renderer, float ts) override;
     private:
+        /**
+         * All the code for checking all the input related things is put here because it is a lot of code
+         */
+        void checkInputs();
+
         bool gameOver = false;
 
         unsigned int * field;
         unsigned int currentPiece;
         int currentRotation;
+        int storedRotation; // Used to continue alternating the rotation angles when rotating (when the piece is stuck)
         int currentX, currentY;
 
         float currentSpeed;
@@ -57,9 +62,11 @@ namespace Tetris {
 
         std::mt19937 engine;
 
-        bool isInstantDropPressed = false;
-        bool isRotatePressed = false;
-        bool isRotateBackwardsPressed = false;
+        int leftDelay, rightDelay, downDelay;
+
+        bool wasInstantPressed = false;
+        bool wasRotatePressed = false;
+        bool wasLeftPressed = false, wasRightPressed = false, wasDownPressed = false;
         std::map<int, Uint64> lastPress;
     };
 
