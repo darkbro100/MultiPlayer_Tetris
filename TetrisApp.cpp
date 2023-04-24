@@ -50,14 +50,19 @@ namespace Tetris {
         TextureHolder holder = loadTexture("./assets/image.png", "tetronimo", renderer);
         if (!holder.texture)
             this->initialized = false;
+        loadedTextures.push_back(holder);
 
         // Load main font
         FontHolder fontHolder = loadFont("./assets/OpenSans.ttf", "opensans", 18);
         if (!fontHolder.font)
             this->initialized = false;
-
         loadedFonts.push_back(fontHolder);
-        loadedTextures.push_back(holder);
+
+        // Load larger font
+        FontHolder largeFontHolder = loadFont("./assets/OpenSans.ttf", "opensans_large", 36);
+        if (!largeFontHolder.font)
+            this->initialized = false;
+        loadedFonts.push_back(largeFontHolder);
 
         // Load textures for buttons & arrow
         holder = loadTexture("./assets/arrow.png", "arrow", renderer);
