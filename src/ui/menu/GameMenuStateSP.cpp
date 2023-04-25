@@ -240,9 +240,9 @@ namespace Tetris {
             }
         } else {
             // Draw Game Over
-            FontHolder fontHolder = app->getFont("opensans_large");
-            SDL_Rect textRect = {startX + (FIELD_WIDTH * CELL_SIZE) / 2 - 100,
-                                 startY + (FIELD_HEIGHT * CELL_SIZE) / 2 - 50, 200, 100};
+            fontHolder = app->getFont("opensans_large");
+            textRect = {startX + (FIELD_WIDTH * CELL_SIZE) / 2 - 100,
+                        startY + (FIELD_HEIGHT * CELL_SIZE) / 2 - 50, 200, 100};
             renderText(renderer, fontHolder.font, "Game Over", {255, 255, 255, 255}, &textRect);
 
             // Draw "Press Enter to Continue" below
