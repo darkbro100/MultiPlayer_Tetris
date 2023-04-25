@@ -5,9 +5,9 @@
 #ifndef MPTETRIS_TETRISAPP_H
 #define MPTETRIS_TETRISAPP_H
 
-#include "MenuState.h"
-#include "AssetHelper.h"
-#include "RenderHelper.h"
+#include "ui/menu/MenuState.h"
+#include "ui/AssetHelper.h"
+#include "ui/RenderHelper.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "SDL_image.h"

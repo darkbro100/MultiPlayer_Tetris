@@ -15,5 +15,7 @@ find_package(SDL2_image REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${ASIO_PATH}/include)
 
-add_executable(MPTetris GameMenuStateSP.h GameMenuStateSP.cpp Tetronimo.h Tetronimo.cpp AssetHelper.h RenderHelper.h AppComponent.h EntityComponent.h TetrisApp.h MenuState.cpp MenuState.h AssetHelper.cpp RenderHelper.cpp AppComponent.cpp EntityComponent.cpp TetrisApp.cpp main.cpp)
+file(GLOB_RECURSE SOURCES src/*.cpp)
+
+add_executable(MPTetris ${SOURCES})
 target_link_libraries(MPTetris SDL2::Main SDL2::Image SDL2::TTF)

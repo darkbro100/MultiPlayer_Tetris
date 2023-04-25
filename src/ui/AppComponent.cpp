@@ -2,7 +2,7 @@
 // Created by pauli on 2/3/2023.
 //
 #include "AppComponent.h"
-#include "TetrisApp.h"
+#include "../TetrisApp.h"
 
 namespace Tetris {
 

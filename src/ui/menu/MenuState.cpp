@@ -3,7 +3,8 @@
 //
 
 #include "GameMenuStateSP.h"
-#include "TetrisApp.h"
+#include "../../TetrisApp.h"
+#include "GameMenuStateMP.h"
 #include <iostream>
 
 namespace Tetris {
@@ -47,7 +48,6 @@ namespace Tetris {
                                                                                     App::WINDOW_WIDTH / 2,
                                                                                     App::WINDOW_HEIGHT / 2, 153, 56);
         button->onClick([&]() {
-            std::cout << "SP button clicked" << std::endl;
             std::shared_ptr<MenuState> nextState = std::make_shared<GameMenuStateSP>(app);
             nextState->loadComponents();
             app->changeState(nextState);
@@ -58,8 +58,7 @@ namespace Tetris {
         button = std::make_shared<ButtonComponent>(this->app, "mp_button", "mp_button", App::WINDOW_WIDTH / 2,
                                                    App::WINDOW_HEIGHT / 2 + 100, 153, 56);
         button->onClick([&]() {
-            std::cout << "MP button clicked" << std::endl;
-            std::shared_ptr<MenuState> nextState = std::make_shared<GameMenuStateSP>(app);
+            std::shared_ptr<MenuState> nextState = std::make_shared<GameMenuStateMP>(app);
             nextState->loadComponents();
             app->changeState(nextState);
         });

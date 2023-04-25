@@ -3,7 +3,7 @@
 //
 
 #include "Tetronimo.h"
-#include "GameMenuStateSP.h"
+#include "../ui/menu/GameMenuStateSP.h"
 
 namespace Tetris {
 

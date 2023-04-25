@@ -5,7 +5,7 @@
 #ifndef MPTETRIS_GAMEMENUSTATESP_H
 #define MPTETRIS_GAMEMENUSTATESP_H
 
-#include "Tetronimo.h"
+#include "../../game/Tetronimo.h"
 #include "MenuState.h"
 #include <vector>
 #include <memory>

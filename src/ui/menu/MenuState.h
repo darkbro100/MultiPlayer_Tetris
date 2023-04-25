@@ -5,7 +5,8 @@
 #ifndef MPTETRIS_MENUSTATE_H
 #define MPTETRIS_MENUSTATE_H
 
-#include "EntityComponent.h"
+#include "../AppComponent.h"
+#include "SDL.h"
 #include <vector>
 #include <memory>
 
