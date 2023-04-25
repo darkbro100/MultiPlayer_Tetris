@@ -43,17 +43,9 @@ namespace Tetris {
         void update(float ts) override;
         void render(SDL_Renderer *renderer, float ts) override;
     private:
-        bool lastDownPress;
+        bool lastDownPress = false, lastReturnPress = false;
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
         int selectedButton = 0;
-    };
-
-    class TestMenuState : public MenuState {
-    public:
-        explicit TestMenuState(App *app);
-        void loadComponents() override;
-        void update(float ts) override;
-        void render(SDL_Renderer *renderer, float ts) override;
     };
 }
 

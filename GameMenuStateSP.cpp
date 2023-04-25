@@ -52,8 +52,16 @@ namespace Tetris {
     void GameMenuStateSP::update(float ts) {
         MenuState::update(ts);
 
-        //TODO: make game over better lol
         if (gameOver) {
+            bool returnKey = app->isKeyPressed(SDL_SCANCODE_RETURN);
+
+            // If any key has been pressed after the game over screen has popped up. Go back to the main menu
+            if (returnKey) {
+                std::shared_ptr<MenuState> nextState = std::make_shared<MainMenuState>(app);
+                nextState->loadComponents();
+                app->changeState(nextState);
+            }
+
             return;
         }
 
@@ -227,10 +235,16 @@ namespace Tetris {
                 renderPiece(renderer, 0, 0, storedPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 425, 100);
             }
         } else {
-            // Render the lines
+            // Draw Game Over
             FontHolder fontHolder = app->getFont("opensans_large");
-            SDL_Rect textRect = {startX + (FIELD_WIDTH * CELL_SIZE) / 2 - 100, startY + (FIELD_HEIGHT * CELL_SIZE) / 2 - 50, 200, 100};
+            SDL_Rect textRect = {startX + (FIELD_WIDTH * CELL_SIZE) / 2 - 100,
+                                 startY + (FIELD_HEIGHT * CELL_SIZE) / 2 - 50, 200, 100};
             renderText(renderer, fontHolder.font, "Game Over", {255, 255, 255, 255}, &textRect);
+
+            // Draw "Press Enter to Continue" below
+            textRect = {startX + (FIELD_WIDTH * CELL_SIZE) / 2 - 150,
+                        startY + (FIELD_HEIGHT * CELL_SIZE) / 2 + 50, 300, 100};
+            renderText(renderer, fontHolder.font, "Press Enter", {255, 255, 255, 255}, &textRect);
         }
     }
 
@@ -263,7 +277,7 @@ namespace Tetris {
         bool canPressDown = lastPress.count(DOWN_KEY) == 0 || SDL_GetTicks64() > this->lastPress[DOWN_KEY];
 
         // First check if we can store a piece
-        if(!hasStored && isStorePressed && !wasStorePressed) {
+        if (!hasStored && isStorePressed && !wasStorePressed) {
             unsigned int temp = storedPiece;
             storedPiece = currentPiece;
             currentPiece = temp;
@@ -340,7 +354,9 @@ namespace Tetris {
 
     }
 
-    void GameMenuStateSP::renderPiece(SDL_Renderer *renderer, int x, int y, unsigned int piece, int rotation, int startX, int startY, int alpha) {
+    void
+    GameMenuStateSP::renderPiece(SDL_Renderer *renderer, int x, int y, unsigned int piece, int rotation, int startX,
+                                 int startY, int alpha) {
         for (int pieceX = 0; pieceX < Tetromino::TETROMINO_SIZE; pieceX++) {
             for (int pieceY = 0; pieceY < Tetromino::TETROMINO_SIZE; pieceY++) {
                 const unsigned int *shape = Tetromino::getShape(piece);

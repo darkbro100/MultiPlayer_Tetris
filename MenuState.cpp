@@ -39,6 +39,9 @@ namespace Tetris {
     void MainMenuState::loadComponents() {
         MenuState::loadComponents();
 
+        // Ensure this is updated in case the user is already holding return
+        lastReturnPress = app->isKeyPressed(SDL_SCANCODE_RETURN);
+
         std::shared_ptr<ButtonComponent> button = std::make_shared<ButtonComponent>(this->app, "start_button",
                                                                                     "start_button",
                                                                                     App::WINDOW_WIDTH / 2,
@@ -68,6 +71,10 @@ namespace Tetris {
         MenuState::update(ts);
 
         // Check and determine which button is currently being selected
+        bool isRetPressed = app->isKeyPressed(SDL_SCANCODE_RETURN);
+        bool wasRetPressed = this->lastReturnPress;
+        this->lastReturnPress = isRetPressed;
+
         bool isPressed = app->isKeyPressed(SDL_SCANCODE_DOWN) || app->isKeyPressed(SDL_SCANCODE_UP);
         bool wasPressed = this->lastDownPress;
         this->lastDownPress = isPressed;
@@ -80,7 +87,7 @@ namespace Tetris {
         }
 
         // Determine if the currently selected button is being pressed
-        if (app->isKeyPressed(SDL_SCANCODE_RETURN)) {
+        if (isRetPressed && !wasRetPressed) {
             std::shared_ptr<ButtonComponent> selected = buttons[selectedButton];
             selected->click();
         }
@@ -105,21 +112,5 @@ namespace Tetris {
 
         SDL_FRect dst = {arrowX, arrowY, arrowDiff, arrowDiff};
         renderTexture(renderer, holder.texture, &src, &dst);
-    }
-
-    TestMenuState::TestMenuState(App *app) : MenuState(app) {
-
-    }
-
-    void TestMenuState::loadComponents() {
-        MenuState::loadComponents();
-    }
-
-    void TestMenuState::update(float ts) {
-        MenuState::update(ts);
-    }
-
-    void TestMenuState::render(SDL_Renderer *renderer, float ts) {
-        MenuState::render(renderer, ts);
     }
 }
