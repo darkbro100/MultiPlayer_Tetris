@@ -2,6 +2,7 @@
 // Created by pauli on 2/6/2023.
 //
 
+#include "asio.hpp"
 #include "TetrisApp.h"
 #include "GameMenuStateSP.h"
 #include <random>
@@ -47,6 +48,9 @@ namespace Tetris {
 
     void GameMenuStateSP::loadComponents() {
         MenuState::loadComponents();
+
+        asio::io_context io_context;
+        asio::ip::tcp::resolver resolver(io_context);
     }
 
     void GameMenuStateSP::update(float ts) {

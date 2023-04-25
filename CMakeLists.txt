@@ -6,12 +6,14 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 set(SDL2_PATH "SDL2")
 set(SDL2_IMAGE_PATH "SDL2_image")
 set(SDL2_TTF_PATH "SDL2_ttf")
+set(ASIO_PATH "ASIO")
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_image REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(${ASIO_PATH}/include)
 
 add_executable(MPTetris GameMenuStateSP.h GameMenuStateSP.cpp Tetronimo.h Tetronimo.cpp AssetHelper.h RenderHelper.h AppComponent.h EntityComponent.h TetrisApp.h MenuState.cpp MenuState.h AssetHelper.cpp RenderHelper.cpp AppComponent.cpp EntityComponent.cpp TetrisApp.cpp main.cpp)
 target_link_libraries(MPTetris SDL2::Main SDL2::Image SDL2::TTF)
