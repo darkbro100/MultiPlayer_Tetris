@@ -34,6 +34,7 @@ namespace Tetris {
         const static int BOUNDARY_ID = 8;
         const static int EMPTY_ID = 0;
 
+        const static int STORE_KEY = SDL_SCANCODE_C;
         const static int ROTATE_KEY = SDL_SCANCODE_UP;
         const static int LEFT_KEY = SDL_SCANCODE_LEFT;
         const static int RIGHT_KEY = SDL_SCANCODE_RIGHT;
@@ -69,6 +70,9 @@ namespace Tetris {
         unsigned int currentPiece;
         unsigned int nextPiece;
         unsigned int storedPiece = 2;
+
+        bool hasStored = false;
+
         int currentRotation;
         int storedRotation; // Used to continue alternating the rotation angles when rotating (when the piece is stuck)
         int currentX, currentY;
@@ -84,6 +88,7 @@ namespace Tetris {
 
         int leftDelay, rightDelay, downDelay;
 
+        bool wasStorePressed = false;
         bool wasInstantPressed = false;
         bool wasRotatePressed = false;
         bool wasLeftPressed = false, wasRightPressed = false, wasDownPressed = false;

@@ -136,6 +136,7 @@ namespace Tetris {
                 leftDelay = INPUT_DELAY;
                 rightDelay = INPUT_DELAY;
                 downDelay = INPUT_DELAY;
+                hasStored = false;
 
                 if (!Tetromino::canFit(currentPiece, currentX, currentY, currentRotation, field))
                     gameOver = true;
@@ -166,10 +167,10 @@ namespace Tetris {
                     SDL_Rect srcRect = {textureX + TEXTURE_BORDER, TEXTURE_BORDER, 460, 460};
                     SDL_Rect dstRec = {posX, posY, CELL_SIZE, CELL_SIZE};
 
-                    renderTexture(renderer, tetrominoTexture, &srcRect, &dstRec);
+                    renderTexture(renderer, tetrominoTexture, &srcRect, &dstRec, gameOver ? 100 : 255);
                 } else if (id == EMPTY_ID) {
                     // Draw blank square
-                    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                    SDL_SetRenderDrawColor(renderer, 128, 128, 128, gameOver ? 100 : 255);
                     SDL_Rect rect = {posX, posY, CELL_SIZE, CELL_SIZE};
                     SDL_RenderDrawRect(renderer, &rect);
                 } else {
@@ -185,9 +186,9 @@ namespace Tetris {
                         textureX = TEXTURE_SIZE * 7;
                         srcRect = {textureX + TEXTURE_BORDER, TEXTURE_BORDER, 460, 460};
 
-                        renderTexture(renderer, tetrominoTexture, &srcRect, &dstRec);
+                        renderTexture(renderer, tetrominoTexture, &srcRect, &dstRec, gameOver ? 100 : 255);
                     } else
-                        renderTexture(renderer, tetrominoTexture, &srcRect, &dstRec);
+                        renderTexture(renderer, tetrominoTexture, &srcRect, &dstRec, gameOver ? 100 : 255);
                 }
             }
         }
@@ -240,13 +241,16 @@ namespace Tetris {
         bool isLeftPressed = app->isKeyPressed(LEFT_KEY);
         bool isRightPressed = app->isKeyPressed(RIGHT_KEY);
         bool isDownPressed = app->isKeyPressed(DOWN_KEY);
+        bool isStorePressed = app->isKeyPressed(STORE_KEY);
 
         bool wasInstantPressed = this->wasInstantPressed;
         bool wasRotatePressed = this->wasRotatePressed;
         bool wasLeftPressed = this->wasLeftPressed;
         bool wasRightPressed = this->wasRightPressed;
         bool wasDownPressed = this->wasDownPressed;
+        bool wasStorePressed = this->wasStorePressed;
 
+        this->wasStorePressed = isStorePressed;
         this->wasLeftPressed = isLeftPressed;
         this->wasRightPressed = isRightPressed;
         this->wasDownPressed = isDownPressed;
@@ -257,6 +261,14 @@ namespace Tetris {
         bool canPressLeft = lastPress.count(LEFT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[LEFT_KEY];
         bool canPressRight = lastPress.count(RIGHT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[RIGHT_KEY];
         bool canPressDown = lastPress.count(DOWN_KEY) == 0 || SDL_GetTicks64() > this->lastPress[DOWN_KEY];
+
+        // First check if we can store a piece
+        if(!hasStored && isStorePressed && !wasStorePressed) {
+            unsigned int temp = storedPiece;
+            storedPiece = currentPiece;
+            currentPiece = temp;
+            hasStored = true;
+        }
 
         // Input handling for moving forward/backward/down
         if (isLeftPressed) {
