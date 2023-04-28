@@ -13,34 +13,34 @@
 #include "./net/NetworkClient.h"
 #include "./net/NetworkServer.h"
 
-//int main(int argc, char *argv[]) {
-//    asio::io_context context;
-//
-//    const std::string & host = "127.0.0.1";
-//    const uint16_t port = 25000;
-//
-//    // Resolve hostname/ip-address into tangiable physical address
-//    asio::ip::tcp::resolver resolver(context);
-//    asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
-//
-//    Tetris::NetworkClient client(context, asio::ip::tcp::socket(context));
-//    client.connect(endpoints);
-//
-//    while(true) {
-//
-//    }
-//    return 0;
-//}
-
 int main(int argc, char *argv[]) {
-    Tetris::NetworkServer server(25000);
-    server.start();
+    asio::io_context context;
+
+    const std::string & host = "127.0.0.1";
+    const uint16_t port = 25000;
+
+    // Resolve hostname/ip-address into tangiable physical address
+    asio::ip::tcp::resolver resolver(context);
+    asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
+
+    Tetris::NetworkClient client(context, asio::ip::tcp::socket(context));
+    client.connect(endpoints);
 
     while(true) {
-        server.update();
-    }
 
-//    Tetris::App app;
-//    app.run();
+    }
     return 0;
 }
+//
+//int main(int argc, char *argv[]) {
+//    Tetris::NetworkServer server(25000);
+//    server.start();
+//
+//    while(true) {
+//        server.update();
+//    }
+//
+////    Tetris::App app;
+////    app.run();
+//    return 0;
+//}

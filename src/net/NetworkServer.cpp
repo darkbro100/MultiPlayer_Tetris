@@ -27,8 +27,9 @@ namespace Tetris {
     void NetworkServer::listenForClient() {
         acceptor.async_accept([this](std::error_code ec, asio::ip::tcp::socket socket) {
             if(!ec) {
+                std::string message = "Hello from server!";
                 NetworkMessage toSend;
-                toSend << "Hello from server!";
+                toSend << message;
 
                 std::cout << "New client connected: " << socket.remote_endpoint() << " ... Sending test message" << std::endl;
 

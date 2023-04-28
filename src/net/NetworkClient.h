@@ -16,7 +16,9 @@ namespace Tetris {
         NetworkClient(asio::io_context& asioContext, asio::ip::tcp::socket _socket) : ioContext(asioContext), socket(std::move(_socket)) {};
         void connect(const asio::ip::tcp::resolver::results_type & endpoint);
 
-        void read();
+        void beginRead();
+        void finishRead();
+
         void send(const NetworkMessage & message);
     private:
         void beginMessageSend();
@@ -29,6 +31,8 @@ namespace Tetris {
         asio::ip::tcp::socket socket;
 
         NetworkMessage modifyingMessage;
+
+        std::thread clientThread;
     };
 
 } // Tetris
