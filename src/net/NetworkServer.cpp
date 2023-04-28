@@ -2,6 +2,7 @@
 // Created by pauli on 4/27/2023.
 //
 
+#include "NetworkClient.h"
 #include "NetworkServer.h"
 
 namespace Tetris {
@@ -26,7 +27,15 @@ namespace Tetris {
     void NetworkServer::listenForClient() {
         acceptor.async_accept([this](std::error_code ec, asio::ip::tcp::socket socket) {
             if(!ec) {
-                std::cout << "New client connected: " << socket.remote_endpoint() << std::endl;
+                NetworkMessage toSend;
+                toSend << "Hello from server!";
+
+                std::cout << "New client connected: " << socket.remote_endpoint() << " ... Sending test message" << std::endl;
+
+                std::shared_ptr<NetworkClient> client = std::make_shared<NetworkClient>(ioContext, std::move(socket));
+                clients.push_back(client);
+
+                client->send(toSend);
             } else {
                 std::cout << "Failed to connect to client: " << ec.message() << std::endl;
             }

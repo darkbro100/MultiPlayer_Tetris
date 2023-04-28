@@ -1,7 +1,6 @@
 //
 // Created by pauli on 4/27/2023.
 //
-
 #ifndef MPTETRIS_NETWORKSERVER_H
 #define MPTETRIS_NETWORKSERVER_H
 
@@ -29,6 +28,8 @@ namespace Tetris {
         asio::ip::tcp::acceptor acceptor;
 
         std::thread serverThread;
+
+        std::vector<std::shared_ptr<NetworkClient>> clients;
     };
 }
 
