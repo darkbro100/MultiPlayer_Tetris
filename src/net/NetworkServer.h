@@ -17,12 +17,13 @@ namespace Tetris {
         ~NetworkServer();
 
         void start();
-        void update();
+        void update(bool block = false);
+        void onMessageReceive(const std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> & handler);
     private:
         void stop();
         void listenForClient();
 
-        ConcurrentQueue<NetworkMessage> incoming;
+        ConcurrentQueue<OwnedNetworkMessage> incoming;
 
         asio::io_context ioContext;
         asio::ip::tcp::acceptor acceptor;
@@ -30,6 +31,11 @@ namespace Tetris {
         std::thread serverThread;
 
         std::vector<std::shared_ptr<NetworkClient>> clients;
+
+        // Function for handling messages
+        std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> messageHandler = [](const std::shared_ptr<NetworkClient>&, const NetworkMessage&) {};
+
+        uint32_t clientIdCounter = 10000;
     };
 }
 

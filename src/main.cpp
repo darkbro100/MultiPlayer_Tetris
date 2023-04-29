@@ -22,8 +22,24 @@ int main(int argc, char *argv[]) {
     // Resolve hostname/ip-address into tangiable physical address
     asio::ip::tcp::resolver resolver(context);
     asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
+    Tetris::ConcurrentQueue<Tetris::OwnedNetworkMessage> incoming;
 
-    Tetris::NetworkClient client(context, asio::ip::tcp::socket(context));
+    Tetris::NetworkClient client(context, asio::ip::tcp::socket(context), incoming);
+    client.onMessageReceive([&](const Tetris::NetworkMessage & message) {
+        std::cout << "Message received: " << message << std::endl;
+
+        if(message.header.type == Tetris::MessageType::DEBUG) {
+            std::cout << "sending response" << std::endl;
+
+            std::string responseMessage = "Hello from client!";
+
+            Tetris::NetworkMessage response;
+            response.header.type = Tetris::MessageType::DEBUG;
+            response << responseMessage;
+
+            client.send(response);
+        }
+    });
     client.connect(endpoints);
 
     while(true) {
@@ -34,6 +50,21 @@ int main(int argc, char *argv[]) {
 //
 //int main(int argc, char *argv[]) {
 //    Tetris::NetworkServer server(25000);
+//    server.onMessageReceive([&](const std::shared_ptr<Tetris::NetworkClient>& client, const Tetris::NetworkMessage & message) {
+//        std::cout << "Message received: " << message << std::endl;
+//
+//        if(message.header.type == Tetris::MessageType::DEBUG) {
+//            std::cout << "sending response" << std::endl;
+//
+//            std::string responseMessage = "Hello from server!";
+//
+//            Tetris::NetworkMessage response;
+//            response.header.type = Tetris::MessageType::DEBUG;
+//            response << responseMessage;
+//
+//            client->send(response);
+//        }
+//    });
 //    server.start();
 //
 //    while(true) {

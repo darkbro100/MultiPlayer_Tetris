@@ -8,14 +8,20 @@
 #include <vector>
 
 namespace Tetris {
+
+    // Forward declaration
+    class NetworkClient;
+
     enum class MessageType {
+        DEBUG,
+
         CONNECT,
         DISCONNECT
     };
 
-    struct NetworkMessageString {
-        uint32_t size;
-        const char * data;
+    struct NetworkMessageHeader {
+        MessageType type;
+        uint32_t messageSize;
     };
 
     /**
@@ -23,9 +29,8 @@ namespace Tetris {
     * Backed by a std::vector that contains the amount of the bytes for the message.
     */
     struct NetworkMessage {
-        MessageType type;
-        uint32_t messageSize = 0;
-        std::vector<uint8_t> data;
+        NetworkMessageHeader header{};
+        std::vector<uint8_t> data{};
 
         friend std::ostream &operator<<(std::ostream &os, const NetworkMessage &message);
 
@@ -43,6 +48,14 @@ namespace Tetris {
         // Helper methods to append/read from the data vector for const char pointer.
         void append(const char *string, uint32_t i);
         void read(const char *string, uint32_t i);
+    };
+
+    /**
+     * Represents a NetworkMessage that is owned/sent by a client to a server. This won't necessarily be relevant for messages sent from a server to a client, but more relevant for the other way around.
+     */
+    struct OwnedNetworkMessage {
+        std::shared_ptr<NetworkClient> client;
+        NetworkMessage message;
     };
 
     inline NetworkMessage& operator<<(NetworkMessage& message, const std::string& str) {
@@ -69,7 +82,7 @@ namespace Tetris {
         memcpy(&pod, message.data.data() + message.data.size() - sizeof(POD), sizeof(POD));
 
         // Decrease the message size by the size of the POD
-        message.messageSize -= sizeof(POD);
+        message.header.messageSize -= sizeof(POD);
 
         // Resize the vector to fit our new data
         message.data.resize(message.data.size() - sizeof(POD));
@@ -89,25 +102,25 @@ namespace Tetris {
         memcpy(message.data.data() + message.data.size() - sizeof(POD), &pod, sizeof(POD));
 
         // Increase the message size by the size of the POD
-        message.messageSize += sizeof(POD);
+        message.header.messageSize += sizeof(POD);
 
         return message;
     }
 
     inline std::ostream &operator<<(std::ostream &os, const NetworkMessage &message) {
-        os << "type: " << static_cast<int>(message.type) << " messageSize: " << message.messageSize;
+        os << "type: " << static_cast<int>(message.header.type) << " messageSize: " << message.header.messageSize;
         return os;
     }
 
     inline void NetworkMessage::append(const char *string, uint32_t i) {
         data.resize(data.size() + i);
         memcpy(data.data() + data.size() - i, string, i);
-        messageSize += i;
+        header.messageSize += i;
     }
 
     inline void NetworkMessage::read(const char *string, uint32_t i) {
         memcpy((void*)string, data.data() + data.size() - i, i);
-        messageSize -= i;
+        header.messageSize -= i;
         data.resize(data.size() - i);
     }
 }

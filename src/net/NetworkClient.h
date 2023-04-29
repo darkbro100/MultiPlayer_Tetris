@@ -11,20 +11,30 @@
 
 namespace Tetris {
 
-    class NetworkClient {
+    enum class ClientType {
+        CLIENT,
+        SERVER
+    };
+
+    class NetworkClient : public std::enable_shared_from_this<NetworkClient> {
     public:
-        NetworkClient(asio::io_context& asioContext, asio::ip::tcp::socket _socket) : ioContext(asioContext), socket(std::move(_socket)) {};
+        NetworkClient(asio::io_context& asioContext, asio::ip::tcp::socket _socket, ConcurrentQueue<OwnedNetworkMessage> & _incoming) : ioContext(asioContext), socket(std::move(_socket)), incoming(_incoming) {};
         void connect(const asio::ip::tcp::resolver::results_type & endpoint);
+        void connect(uint32_t id);
+
+        void send(const NetworkMessage & message);
+        void onMessageReceive(const std::function<void(NetworkMessage)> & handler);
+    private:
+        uint32_t clientId = 0;
 
         void beginRead();
         void finishRead();
 
-        void send(const NetworkMessage & message);
-    private:
+        void addToIncomingQueue();
         void beginMessageSend();
         void finishMessageSend();
 
-        ConcurrentQueue<NetworkMessage> incoming{};
+        ConcurrentQueue<OwnedNetworkMessage> & incoming;
         ConcurrentQueue<NetworkMessage> outgoing{};
 
         asio::io_context & ioContext;
@@ -33,6 +43,11 @@ namespace Tetris {
         NetworkMessage modifyingMessage;
 
         std::thread clientThread;
+
+        // Function for handling messages
+        std::function<void(NetworkMessage)> messageHandler = [](const NetworkMessage&) {};
+
+        ClientType clientType;
     };
 
 } // Tetris
