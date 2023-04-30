@@ -16,6 +16,9 @@ namespace Tetris {
         explicit NetworkServer(uint16_t port) : acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {};
         ~NetworkServer();
 
+        void sendMessageToAll(const NetworkMessage & message, uint32_t id = 0);
+        void sendMessageTo(const NetworkMessage & message, uint32_t id);
+
         void start();
         void update(bool block = false);
         void onMessageReceive(const std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> & handler);

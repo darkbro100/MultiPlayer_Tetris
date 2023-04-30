@@ -24,6 +24,7 @@ namespace Tetris {
 
         void send(const NetworkMessage & message);
         void onMessageReceive(const std::function<void(NetworkMessage)> & handler);
+        uint32_t getId() const;
     private:
         uint32_t clientId = 0;
 

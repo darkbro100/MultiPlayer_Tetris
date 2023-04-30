@@ -4,6 +4,7 @@
 
 #include "NetworkClient.h"
 #include "NetworkServer.h"
+#include <algorithm>
 
 namespace Tetris {
 
@@ -64,5 +65,20 @@ namespace Tetris {
 
     void NetworkServer::onMessageReceive(const std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> & handler) {
         messageHandler = handler;
+    }
+
+    void NetworkServer::sendMessageTo(const NetworkMessage &message, uint32_t id) {
+        auto result = std::find_if(clients.begin(), clients.end(), [&](const std::shared_ptr<NetworkClient>& client){ return client->getId() == id; });
+        if(result != std::end(clients)) {
+            (*result)->send(message);
+        }
+    }
+
+    void NetworkServer::sendMessageToAll(const NetworkMessage &message, uint32_t id) {
+        for(auto & client : clients) {
+            if(client->getId() != id) {
+                client->send(message);
+            }
+        }
     }
 }

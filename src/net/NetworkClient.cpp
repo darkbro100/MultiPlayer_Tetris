@@ -121,4 +121,8 @@ namespace Tetris {
         }
     }
 
+    uint32_t NetworkClient::getId() const {
+        return id;
+    }
+
 } // Tetris
