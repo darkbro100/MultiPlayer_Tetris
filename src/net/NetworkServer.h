@@ -17,7 +17,7 @@ namespace Tetris {
         ~NetworkServer();
 
         void sendMessageToAll(const NetworkMessage & message, uint32_t id = 0);
-        void sendMessageTo(const NetworkMessage & message, uint32_t id);
+        void sendMessageTo(const NetworkMessage & message, std::shared_ptr<NetworkClient> & client);
 
         void start();
         void update(bool block = false);

@@ -122,7 +122,11 @@ namespace Tetris {
     }
 
     uint32_t NetworkClient::getId() const {
-        return id;
+        return clientId;
+    }
+
+    bool NetworkClient::isSocketOpen() {
+        return socket.is_open();
     }
 
 } // Tetris

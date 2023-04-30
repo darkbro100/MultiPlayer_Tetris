@@ -85,13 +85,33 @@ namespace Tetris {
     }
 
     ButtonComponent::ButtonComponent(Tetris::App *app, const std::string &id, const std::string &texture, int x, int y,
-                                     int width, int height) : UpdatingComponent(app, id, x, y, width, height) {
-        this->holder = app->getTexture(texture);
+                                     int width, int height, bool isText) : UpdatingComponent(app, id, x, y, width, height) {
+        if(!isText) {
+            this->textureHolder = app->getTexture(texture);
+        } else {
+            this->buttonText = texture;
+            this->textureHolder = {};
+            this->fontHolder = app->getFont("opensans_large");
+        }
     }
 
     void ButtonComponent::render(SDL_Renderer *renderer, float timestep) {
         SDL_FRect dest = {x - (width / 2), y - height, width, height};
-        SDL_RenderCopyF(renderer, holder.texture, nullptr, &dest);
+
+        if(textureHolder.texture) {
+            SDL_RenderCopyF(renderer, textureHolder.texture, nullptr, &dest);
+        } else {
+            // Give gray background before rendering text
+            SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+            SDL_FRect outter = {dest.x - 5, dest.y, dest.w + 10, dest.h + 10};
+            SDL_RenderFillRectF(renderer, &outter);
+
+            // Render white border
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_RenderDrawRectF(renderer, &outter);
+
+            renderText(renderer, fontHolder.font, buttonText, {255, 255, 255, 255}, &dest);
+        }
     }
 
     void ButtonComponent::update(float timestep) { }

@@ -71,7 +71,7 @@ namespace Tetris {
 
     class ButtonComponent : public UpdatingComponent {
     public:
-        ButtonComponent(Tetris::App *app, const std::string & id, const std::string & texture, int x, int y, int width, int height);
+        ButtonComponent(Tetris::App *app, const std::string & id, const std::string & texture, int x, int y, int width, int height, bool isTextButton = false);
         void render(SDL_Renderer * renderer, float timestep) override;
         void update(float timestep) override;
 
@@ -80,7 +80,9 @@ namespace Tetris {
     protected:
         std::function<void()> onClickCallback = [&](){ };
 
-        TextureHolder holder;
+        std::string buttonText;
+        FontHolder fontHolder;
+        TextureHolder textureHolder;
     };
 
 } // Tetris

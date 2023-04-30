@@ -25,9 +25,8 @@ namespace Tetris {
         void send(const NetworkMessage & message);
         void onMessageReceive(const std::function<void(NetworkMessage)> & handler);
         uint32_t getId() const;
+        bool isSocketOpen();
     private:
-        uint32_t clientId = 0;
-
         void beginRead();
         void finishRead();
 
@@ -48,6 +47,7 @@ namespace Tetris {
         // Function for handling messages
         std::function<void(NetworkMessage)> messageHandler = [](const NetworkMessage&) {};
 
+        uint32_t clientId = 0;
         ClientType clientType;
     };
 

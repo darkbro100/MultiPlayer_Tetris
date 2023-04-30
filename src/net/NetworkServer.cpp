@@ -67,18 +67,33 @@ namespace Tetris {
         messageHandler = handler;
     }
 
-    void NetworkServer::sendMessageTo(const NetworkMessage &message, uint32_t id) {
-        auto result = std::find_if(clients.begin(), clients.end(), [&](const std::shared_ptr<NetworkClient>& client){ return client->getId() == id; });
-        if(result != std::end(clients)) {
-            (*result)->send(message);
-        }
-    }
-
     void NetworkServer::sendMessageToAll(const NetworkMessage &message, uint32_t id) {
+        bool invalid = false;
         for(auto & client : clients) {
+            if(!client || !client->isSocketOpen()) {
+                std::cout << "Disconnected client: " << client->getId() << std::endl;
+                client.reset();
+                invalid = true;
+                continue;
+            }
+
             if(client->getId() != id) {
                 client->send(message);
             }
+        }
+
+        if(invalid) {
+            clients.erase(std::remove(clients.begin(), clients.end(), nullptr), clients.end());
+        }
+    }
+
+    void NetworkServer::sendMessageTo(const NetworkMessage &message, std::shared_ptr<NetworkClient> &client) {
+        if(client && client->isSocketOpen()) {
+            client->send(message);
+        } else {
+            std::cout << "Disconnected client: " << client->getId() << std::endl;
+            client.reset();
+            clients.erase(std::remove(clients.begin(), clients.end(), nullptr), clients.end());
         }
     }
 }
