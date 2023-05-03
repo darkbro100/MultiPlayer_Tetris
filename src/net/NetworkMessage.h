@@ -13,8 +13,8 @@ namespace Tetris {
     class NetworkClient;
 
     enum class MessageType {
-        DEBUG,
-
+        PING,
+        ASSIGN_ID,
         CONNECT,
         DISCONNECT
     };

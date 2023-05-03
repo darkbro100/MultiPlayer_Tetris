@@ -5,6 +5,7 @@
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 #include <algorithm>
+#include <utility>
 
 namespace Tetris {
 
@@ -18,28 +19,33 @@ namespace Tetris {
     }
 
     void NetworkServer::stop() {
+        // Close ASIO context
         ioContext.stop();
 
+        // Join thread
         if(serverThread.joinable()) serverThread.join();
 
+        // Log server stop
         std::cout << "Stopping server..." << std::endl;
     }
 
     void NetworkServer::listenForClient() {
         acceptor.async_accept([this](std::error_code ec, asio::ip::tcp::socket socket) {
             if(!ec) {
-                std::string message = "Hello from server!";
-                NetworkMessage toSend;
-                toSend.header.type = MessageType::DEBUG;
-                toSend << message;
+                auto remote_endpoint = socket.remote_endpoint();
 
-                std::cout << "New client connected: " << socket.remote_endpoint() << " ... Sending test message" << std::endl;
-
-                // Create new client, add it to the list of existing clients, ensure the client is listening for messages, send test message
+                // Create new client, add it to the list of existing clients, ensure the client is listening for messages
                 std::shared_ptr<NetworkClient> client = std::make_shared<NetworkClient>(ioContext, std::move(socket), incoming);
-                clients.push_back(client);
-                client->connect(clientIdCounter++);
-                client->send(toSend);
+
+                if(preConnectHandler(client)) {
+                    clients.push_back(client);
+                    client->connect(clientIdCounter++);
+
+                    // Call the connect handler
+                    connectHandler(client);
+                    std::cout << "[Server] Client Added: " << remote_endpoint << std::endl;
+                    std::cout << "[Server] Total Clients: " << clients.size() << std::endl;
+                }
             } else {
                 std::cout << "Failed to connect to client: " << ec.message() << std::endl;
             }
@@ -63,8 +69,8 @@ namespace Tetris {
         }
     }
 
-    void NetworkServer::onMessageReceive(const std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> & handler) {
-        messageHandler = handler;
+    void NetworkServer::onMessageReceive(std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage &)> handler) {
+        messageHandler = std::move(handler);
     }
 
     void NetworkServer::sendMessageToAll(const NetworkMessage &message, uint32_t id) {
@@ -87,13 +93,20 @@ namespace Tetris {
         }
     }
 
-    void NetworkServer::sendMessageTo(const NetworkMessage &message, std::shared_ptr<NetworkClient> &client) {
+    void NetworkServer::sendMessageTo(const NetworkMessage &message, const std::shared_ptr<NetworkClient> &client) {
         if(client && client->isSocketOpen()) {
             client->send(message);
         } else {
             std::cout << "Disconnected client: " << client->getId() << std::endl;
-            client.reset();
             clients.erase(std::remove(clients.begin(), clients.end(), nullptr), clients.end());
         }
+    }
+
+    void NetworkServer::onClientPreConnect(std::function<bool(std::shared_ptr<NetworkClient>)> handler) {
+        preConnectHandler = std::move(handler);
+    }
+
+    void NetworkServer::onClientConnect(std::function<void(std::shared_ptr<NetworkClient>)> handler) {
+        connectHandler = std::move(handler);
     }
 }

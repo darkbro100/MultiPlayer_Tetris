@@ -27,6 +27,8 @@ namespace Tetris {
         void render(SDL_Renderer *renderer, float ts) override;
 
     private:
+        void onPingReceive(NetworkMessage& message);
+
         bool lastDownPress = false, lastReturnPress = false;
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
         int selectedButton = 0;
@@ -35,6 +37,11 @@ namespace Tetris {
         ConcurrentQueue<OwnedNetworkMessage> incomingMessages{};
         asio::io_context io_context;
         std::shared_ptr<NetworkClient> client;
+
+        std::atomic_int8_t connectionStatus;
+        std::atomic<uint16_t> ping;
+
+        FontHolder font, smallFont;
     };
 } // Tetris
 

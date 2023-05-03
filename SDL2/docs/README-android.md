@@ -327,15 +327,15 @@ addresses in the stack trace to lines in your code.
 
 For example, if your crash looks like this:
 
-    I/DEBUG   (   31): signal 11 (SIGSEGV), code 2 (SEGV_ACCERR), fault addr 400085d0
-    I/DEBUG   (   31):  r0 00000000  r1 00001000  r2 00000003  r3 400085d4
-    I/DEBUG   (   31):  r4 400085d0  r5 40008000  r6 afd41504  r7 436c6a7c
-    I/DEBUG   (   31):  r8 436c6b30  r9 435c6fb0  10 435c6f9c  fp 4168d82c
-    I/DEBUG   (   31):  ip 8346aff0  sp 436c6a60  lr afd1c8ff  pc afd1c902  cpsr 60000030
-    I/DEBUG   (   31):          #00  pc 0001c902  /system/lib/libc.so
-    I/DEBUG   (   31):          #01  pc 0001ccf6  /system/lib/libc.so
-    I/DEBUG   (   31):          #02  pc 000014bc  /data/data/org.libsdl.app/lib/libmain.so
-    I/DEBUG   (   31):          #03  pc 00001506  /data/data/org.libsdl.app/lib/libmain.so
+    I/PING   (   31): signal 11 (SIGSEGV), code 2 (SEGV_ACCERR), fault addr 400085d0
+    I/PING   (   31):  r0 00000000  r1 00001000  r2 00000003  r3 400085d4
+    I/PING   (   31):  r4 400085d0  r5 40008000  r6 afd41504  r7 436c6a7c
+    I/PING   (   31):  r8 436c6b30  r9 435c6fb0  10 435c6f9c  fp 4168d82c
+    I/PING   (   31):  ip 8346aff0  sp 436c6a60  lr afd1c8ff  pc afd1c902  cpsr 60000030
+    I/PING   (   31):          #00  pc 0001c902  /system/lib/libc.so
+    I/PING   (   31):          #01  pc 0001ccf6  /system/lib/libc.so
+    I/PING   (   31):          #02  pc 000014bc  /data/data/org.libsdl.app/lib/libmain.so
+    I/PING   (   31):          #03  pc 00001506  /data/data/org.libsdl.app/lib/libmain.so
 
 You can see that there's a crash in the C library being called from the main code.
 I run addr2line with the debug version of my code:

@@ -17,11 +17,13 @@ namespace Tetris {
         ~NetworkServer();
 
         void sendMessageToAll(const NetworkMessage & message, uint32_t id = 0);
-        void sendMessageTo(const NetworkMessage & message, std::shared_ptr<NetworkClient> & client);
+        void sendMessageTo(const NetworkMessage & message, const std::shared_ptr<NetworkClient> & client);
 
         void start();
         void update(bool block = false);
-        void onMessageReceive(const std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> & handler);
+        void onMessageReceive(std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage &)> handler);
+        void onClientPreConnect(std::function<bool(std::shared_ptr<NetworkClient>)> handler);
+        void onClientConnect(std::function<void(std::shared_ptr<NetworkClient>)> handler);
     private:
         void stop();
         void listenForClient();
@@ -35,8 +37,12 @@ namespace Tetris {
 
         std::vector<std::shared_ptr<NetworkClient>> clients;
 
+        // Function for handling client joins
+        std::function<bool(std::shared_ptr<NetworkClient>)> preConnectHandler;
+        std::function<void(std::shared_ptr<NetworkClient>)> connectHandler;
+
         // Function for handling messages
-        std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage)> messageHandler = [](const std::shared_ptr<NetworkClient>&, const NetworkMessage&) {};
+        std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage &)> messageHandler;
 
         uint32_t clientIdCounter = 10000;
     };

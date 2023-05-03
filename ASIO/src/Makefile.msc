@@ -13,13 +13,13 @@ WARNINGS_CXXFLAGS = -W4 -wd4512 -wd4447
 !endif
 
 !ifdef STATICRTL
-! ifdef DEBUG
+! ifdef PING
 DEBUG_CXXFLAGS = -Zi -MTd
 ! else
 DEBUG_CXXFLAGS = -O2 -MT
 ! endif
 !else
-! ifdef DEBUG
+! ifdef PING
 DEBUG_CXXFLAGS = -Zi -MDd
 ! else
 DEBUG_CXXFLAGS = -O2 -MD

@@ -2,6 +2,10 @@
 // Created by pauli on 4/30/2023.
 //
 
+#include <chrono>
+#include <utility>
+#include "../../net/NetworkClient.h"
+#include "../../net/NetworkMessage.h"
 #include "../../TetrisApp.h"
 #include "HostGameMenuState.h"
 
@@ -17,6 +21,18 @@ namespace Tetris {
         lastReturnPress = app->isKeyPressed(SDL_SCANCODE_RETURN);
 
         // Start the server
+        server.onClientPreConnect([this](std::shared_ptr<NetworkClient> client) { return onPreConnect(client); });
+        server.onClientConnect([this](std::shared_ptr<NetworkClient> client) { onConnect(client); });
+        server.onMessageReceive([this](std::shared_ptr<NetworkClient> client, NetworkMessage & message) {
+            switch (message.header.type) {
+                case MessageType::PING: {
+                    onPingReceive(client, message);
+                    break;
+                }
+                default:
+                    std::cout << "[HGMS] Received unknown message: " << message << std::endl;
+            }
+        });
         server.start();
     }
 
@@ -43,6 +59,29 @@ namespace Tetris {
 
     void HostGameMenuState::render(SDL_Renderer *renderer, float ts) {
         MenuState::render(renderer, ts);
+    }
+
+    void HostGameMenuState::onPingReceive(std::shared_ptr<NetworkClient> &client, NetworkMessage & message) {
+        server.sendMessageTo(message, client);
+    }
+
+    bool HostGameMenuState::onPreConnect(std::shared_ptr<NetworkClient> &client) {
+        return true;
+    }
+
+    void HostGameMenuState::onConnect(std::shared_ptr<NetworkClient> &client) {
+        std::cout << "[HGMS] Client connected: " << client->getId() << std::endl;
+
+        NetworkMessage message;
+        message.header.type = MessageType::CONNECT;
+        message << client->getId();
+
+        NetworkMessage assignId;
+        assignId.header.type = MessageType::ASSIGN_ID;
+        assignId << client->getId();
+
+        server.sendMessageToAll(message);
+        server.sendMessageTo(assignId, client);
     }
 
 } // Tetris

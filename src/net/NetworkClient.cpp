@@ -12,10 +12,19 @@ namespace Tetris {
         asio::async_connect(socket, endpoint, [this](std::error_code ec, const asio::ip::tcp::endpoint &endpoints) {
             if (!ec) {
                 std::cout << "Connected to " << endpoints << std::endl;
+                connectionHandler(true);
                 beginRead();
+
+                // Send a test ping to the server, this will maintain our ping to the server
+                std::chrono::high_resolution_clock::time_point timestamp = std::chrono::high_resolution_clock::now();
+                NetworkMessage pingMessage;
+                pingMessage.header.type = MessageType::PING;
+                pingMessage << timestamp;
+
+                send(pingMessage);
             } else {
-                std::cout << "Failed to connect to " << endpoints << std::endl;
-                if (clientThread.joinable()) clientThread.join();
+                std::cout << "[Client] Failed to connect to " << endpoints << std::endl;
+                connectionHandler(false);
             }
         });
 
@@ -39,10 +48,11 @@ namespace Tetris {
         asio::async_write(socket, asio::buffer(&outgoing.front().header, sizeof(outgoing.front().header)),
                           [this](std::error_code ec, std::size_t length) {
                               if (!ec) {
-                                  std::cout << "Wrote " << length << " bytes" << std::endl;
+//                                  std::cout << "Wrote " << length << " bytes" << std::endl;
                                   finishMessageSend();
                               } else {
-                                  std::cout << "Failed to write " << length << " bytes" << std::endl;
+                                  std::cout << "[Client] Failed to write " << length << " bytes" << std::endl;
+                                  socket.close();
                               }
                           });
     }
@@ -51,14 +61,15 @@ namespace Tetris {
         asio::async_write(socket, asio::buffer(outgoing.front().data.data(), outgoing.front().header.messageSize),
                           [this](std::error_code ec, std::size_t length) {
                               if (!ec) {
-                                  std::cout << "Wrote " << length << " bytes" << std::endl;
+//                                  std::cout << "Wrote " << length << " bytes" << std::endl;
                                   outgoing.pop();
 
                                   if (!outgoing.empty()) {
                                       beginMessageSend();
                                   }
                               } else {
-                                  std::cout << "Failed to write " << length << " bytes" << std::endl;
+                                  std::cout << "[Client] Failed to write " << length << " bytes" << std::endl;
+                                  socket.close();
                               }
                           });
     }
@@ -67,17 +78,18 @@ namespace Tetris {
         asio::async_read(socket, asio::buffer(&modifyingMessage.header, sizeof(modifyingMessage.header)),
                          [this](std::error_code ec, std::size_t length) {
                              if (!ec) {
-                                 std::cout << "Read " << length << " bytes" << std::endl;
+//                                 std::cout << "Read " << length << " bytes" << std::endl;
                                  modifyingMessage.data.resize(modifyingMessage.header.messageSize);
 
-                                 if(modifyingMessage.header.messageSize <= 0) {
+                                 if (modifyingMessage.header.messageSize <= 0) {
                                      addToIncomingQueue();
                                      beginRead();
                                  } else {
                                      finishRead();
                                  }
                              } else {
-                                 std::cout << "Failed to read " << length << " bytes" << std::endl;
+                                 std::cout << "[Client] Failed to read " << length << " bytes" << std::endl;
+                                 socket.close();
                              }
                          });
     }
@@ -86,17 +98,18 @@ namespace Tetris {
         asio::async_read(socket, asio::buffer(modifyingMessage.data.data(), modifyingMessage.header.messageSize),
                          [this](std::error_code ec, std::size_t length) {
                              if (!ec) {
-                                 std::cout << "Read " << length << " bytes" << std::endl;
+//                                 std::cout << "Read " << length << " bytes" << std::endl;
                                  addToIncomingQueue();
                                  beginRead();
                              } else {
-                                 std::cout << "Failed to read " << length << " bytes" << std::endl;
+                                 std::cout << "[Client] Failed to read " << length << " bytes" << std::endl;
+                                 socket.close();
                              }
                          });
     }
 
     void NetworkClient::addToIncomingQueue() {
-        if(clientType == ClientType::SERVER) {
+        if (clientType == ClientType::SERVER) {
             OwnedNetworkMessage ownedMessage = {shared_from_this(), modifyingMessage};
             incoming.push(ownedMessage);
 
@@ -109,12 +122,12 @@ namespace Tetris {
         }
     }
 
-    void NetworkClient::onMessageReceive(const std::function<void(NetworkMessage)> & handler) {
-        messageHandler = handler;
+    void NetworkClient::onMessageReceive(std::function<void(NetworkMessage&)> handler) {
+        messageHandler = std::move(handler);
     }
 
     void NetworkClient::connect(uint32_t id) {
-        if(socket.is_open()) {
+        if (socket.is_open()) {
             clientType = ClientType::SERVER;
             clientId = id;
             beginRead();
@@ -127,6 +140,26 @@ namespace Tetris {
 
     bool NetworkClient::isSocketOpen() {
         return socket.is_open();
+    }
+
+    NetworkClient::~NetworkClient() {
+        // If the socket is open, close it
+        if (isSocketOpen())
+            asio::post(ioContext, [this]() { socket.close(); });
+
+        // Join the thread
+        if (clientThread.joinable())
+            clientThread.join();
+
+        std::cout << "NetworkClient destroyed" << std::endl;
+    }
+
+    void NetworkClient::onConnect(const std::function<void(bool)> &handler) {
+        connectionHandler = handler;
+    }
+
+    void NetworkClient::setId(uint32_t id) {
+        clientId = id;
     }
 
 } // Tetris

@@ -20,8 +20,12 @@ namespace Tetris {
         void update(float ts) override;
 
         void render(SDL_Renderer *renderer, float ts) override;
-
     private:
+        bool onPreConnect(std::shared_ptr<NetworkClient> & client);
+        void onConnect(std::shared_ptr<NetworkClient> & client);
+
+        void onPingReceive(std::shared_ptr<NetworkClient>& client, NetworkMessage & message);
+
         NetworkServer server;
         bool lastDownPress = false, lastReturnPress = false;
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
