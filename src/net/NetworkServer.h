@@ -17,13 +17,14 @@ namespace Tetris {
         ~NetworkServer();
 
         void sendMessageToAll(const NetworkMessage & message, uint32_t id = 0);
-        void sendMessageTo(const NetworkMessage & message, const std::shared_ptr<NetworkClient> & client);
+        void sendMessageTo(const NetworkMessage & message, std::shared_ptr<NetworkClient> & client);
 
         void start();
         void update(bool block = false);
         void onMessageReceive(std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage &)> handler);
         void onClientPreConnect(std::function<bool(std::shared_ptr<NetworkClient>)> handler);
         void onClientConnect(std::function<void(std::shared_ptr<NetworkClient>)> handler);
+        void onClientDisconnect(std::function<void(std::shared_ptr<NetworkClient>&)> handler);
     private:
         void stop();
         void listenForClient();
@@ -40,6 +41,7 @@ namespace Tetris {
         // Function for handling client joins
         std::function<bool(std::shared_ptr<NetworkClient>)> preConnectHandler;
         std::function<void(std::shared_ptr<NetworkClient>)> connectHandler;
+        std::function<void(std::shared_ptr<NetworkClient>&)> disconnectHandler = [](std::shared_ptr<NetworkClient>) { };
 
         // Function for handling messages
         std::function<void(std::shared_ptr<NetworkClient>, NetworkMessage &)> messageHandler;

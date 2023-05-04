@@ -93,11 +93,13 @@ namespace Tetris {
         }
     }
 
-    void NetworkServer::sendMessageTo(const NetworkMessage &message, const std::shared_ptr<NetworkClient> &client) {
+    void NetworkServer::sendMessageTo(const NetworkMessage &message, std::shared_ptr<NetworkClient> &client) {
         if(client && client->isSocketOpen()) {
             client->send(message);
         } else {
             std::cout << "Disconnected client: " << client->getId() << std::endl;
+            disconnectHandler(client);
+            client.reset();
             clients.erase(std::remove(clients.begin(), clients.end(), nullptr), clients.end());
         }
     }
@@ -108,5 +110,9 @@ namespace Tetris {
 
     void NetworkServer::onClientConnect(std::function<void(std::shared_ptr<NetworkClient>)> handler) {
         connectHandler = std::move(handler);
+    }
+
+    void NetworkServer::onClientDisconnect(std::function<void(std::shared_ptr<NetworkClient> &)> handler) {
+        disconnectHandler = std::move(handler);
     }
 }

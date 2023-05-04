@@ -35,7 +35,7 @@ namespace Tetris {
             client->onConnect([this](bool connected) {
                 connectionStatus = connected ? NetworkClient::CONNECTED : NetworkClient::DISCONNECTED;
             });
-            client->onMessageReceive([this](NetworkMessage & message) {
+            client->onMessageReceive([this](NetworkMessage &message) {
                 switch (message.header.type) {
                     case MessageType::PING: {
                         onPingReceive(message);
@@ -50,12 +50,16 @@ namespace Tetris {
                         break;
                     }
                     case MessageType::CONNECT: {
-
+                        uint32_t id;
+                        message >> id;
+                        std::cout << "[JGMS] Client connected to server with ID: " << id << std::endl;
                         break;
                     }
 
                     case MessageType::DISCONNECT: {
-
+                        uint32_t id;
+                        message >> id;
+                        std::cout << "[JGMS] Client disconnected from server with ID: " << id << std::endl;
                         break;
                     }
                     default:
@@ -116,7 +120,7 @@ namespace Tetris {
     JoinGameMenuState::~JoinGameMenuState() {
     }
 
-    void JoinGameMenuState::onPingReceive(NetworkMessage & message) {
+    void JoinGameMenuState::onPingReceive(NetworkMessage &message) {
         std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
         std::chrono::high_resolution_clock::time_point then;
         message >> then;

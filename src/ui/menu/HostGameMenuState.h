@@ -22,6 +22,8 @@ namespace Tetris {
         void render(SDL_Renderer *renderer, float ts) override;
     private:
         bool onPreConnect(std::shared_ptr<NetworkClient> & client);
+
+        void onDisconnect(std::shared_ptr<NetworkClient> & client);
         void onConnect(std::shared_ptr<NetworkClient> & client);
 
         void onPingReceive(std::shared_ptr<NetworkClient>& client, NetworkMessage & message);

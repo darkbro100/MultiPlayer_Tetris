@@ -21,6 +21,7 @@ namespace Tetris {
         lastReturnPress = app->isKeyPressed(SDL_SCANCODE_RETURN);
 
         // Start the server
+        server.onClientDisconnect([this](std::shared_ptr<NetworkClient> client) { onDisconnect(client); });
         server.onClientPreConnect([this](std::shared_ptr<NetworkClient> client) { return onPreConnect(client); });
         server.onClientConnect([this](std::shared_ptr<NetworkClient> client) { onConnect(client); });
         server.onMessageReceive([this](std::shared_ptr<NetworkClient> client, NetworkMessage & message) {
@@ -82,6 +83,16 @@ namespace Tetris {
 
         server.sendMessageToAll(message);
         server.sendMessageTo(assignId, client);
+    }
+
+    void HostGameMenuState::onDisconnect(std::shared_ptr<NetworkClient> &client) {
+        std::cout << "[HGMS] Client disconnected: " << client->getId() << std::endl;
+
+        NetworkMessage message;
+        message.header.type = MessageType::DISCONNECT;
+        message << client->getId();
+
+        server.sendMessageToAll(message);
     }
 
 } // Tetris
