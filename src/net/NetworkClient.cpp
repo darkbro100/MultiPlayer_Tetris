@@ -11,17 +11,9 @@ namespace Tetris {
         // Prime ASIO with some work to do, connect to the socket
         asio::async_connect(socket, endpoint, [this](std::error_code ec, const asio::ip::tcp::endpoint &endpoints) {
             if (!ec) {
-                std::cout << "Connected to " << endpoints << std::endl;
+                std::cout << "[Client] Connected to " << endpoints << std::endl;
                 connectionHandler(true);
                 beginRead();
-
-                // Send a test ping to the server, this will maintain our ping to the server
-                std::chrono::high_resolution_clock::time_point timestamp = std::chrono::high_resolution_clock::now();
-                NetworkMessage pingMessage;
-                pingMessage.header.type = MessageType::PING;
-                pingMessage << timestamp;
-
-                send(pingMessage);
             } else {
                 std::cout << "[Client] Failed to connect to " << endpoints << std::endl;
                 connectionHandler(false);

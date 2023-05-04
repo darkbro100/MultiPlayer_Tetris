@@ -37,7 +37,7 @@ namespace Tetris {
             });
             client->onMessageReceive([this](NetworkMessage &message) {
                 switch (message.header.type) {
-                    case MessageType::PING: {
+                    case MessageType::KEEP_ALIVE: {
                         onPingReceive(message);
                         break;
                     }
@@ -60,6 +60,16 @@ namespace Tetris {
                         uint32_t id;
                         message >> id;
                         std::cout << "[JGMS] Client disconnected from server with ID: " << id << std::endl;
+                        break;
+                    }
+                    case MessageType::PING: {
+                        uint16_t pingData;
+                        uint32_t clientId;
+
+                        message >> pingData >> clientId;
+                        if(clientId == client->getId())
+                            ping = pingData;
+
                         break;
                     }
                     default:
@@ -120,20 +130,10 @@ namespace Tetris {
     JoinGameMenuState::~JoinGameMenuState() {
     }
 
+
+    // Bounce the message back to the server, so the server can calculate the ping
     void JoinGameMenuState::onPingReceive(NetworkMessage &message) {
-        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-        std::chrono::high_resolution_clock::time_point then;
-        message >> then;
-
-        // update ping var. TODO: display ping on screen and calculate an actual avg for the previous pings
-        uint16_t pingData = std::chrono::duration_cast<std::chrono::milliseconds>(now - then).count();
-        ping = pingData;
-
-        NetworkMessage toSend;
-        toSend.header.type = MessageType::PING;
-        toSend << now;
-
-        client->send(toSend);
+        client->send(message);
     }
 
 } // Tetris

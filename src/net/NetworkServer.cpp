@@ -76,16 +76,17 @@ namespace Tetris {
     void NetworkServer::sendMessageToAll(const NetworkMessage &message, uint32_t id) {
         bool invalid = false;
         for(auto & client : clients) {
+            if(client->getId() == id) continue;
+
             if(!client || !client->isSocketOpen()) {
-                std::cout << "Disconnected client: " << client->getId() << std::endl;
+                std::cout << "[Server] Disconnected client: " << client->getId() << std::endl;
+                disconnectHandler(client);
                 client.reset();
                 invalid = true;
                 continue;
             }
 
-            if(client->getId() != id) {
-                client->send(message);
-            }
+            client->send(message);
         }
 
         if(invalid) {
@@ -97,7 +98,7 @@ namespace Tetris {
         if(client && client->isSocketOpen()) {
             client->send(message);
         } else {
-            std::cout << "Disconnected client: " << client->getId() << std::endl;
+            std::cout << "[Server] Disconnected client: " << client->getId() << std::endl;
             disconnectHandler(client);
             client.reset();
             clients.erase(std::remove(clients.begin(), clients.end(), nullptr), clients.end());

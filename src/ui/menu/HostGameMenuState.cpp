@@ -24,9 +24,9 @@ namespace Tetris {
         server.onClientDisconnect([this](std::shared_ptr<NetworkClient> client) { onDisconnect(client); });
         server.onClientPreConnect([this](std::shared_ptr<NetworkClient> client) { return onPreConnect(client); });
         server.onClientConnect([this](std::shared_ptr<NetworkClient> client) { onConnect(client); });
-        server.onMessageReceive([this](std::shared_ptr<NetworkClient> client, NetworkMessage & message) {
+        server.onMessageReceive([this](std::shared_ptr<NetworkClient> client, NetworkMessage &message) {
             switch (message.header.type) {
-                case MessageType::PING: {
+                case MessageType::KEEP_ALIVE: {
                     onPingReceive(client, message);
                     break;
                 }
@@ -62,8 +62,25 @@ namespace Tetris {
         MenuState::render(renderer, ts);
     }
 
-    void HostGameMenuState::onPingReceive(std::shared_ptr<NetworkClient> &client, NetworkMessage & message) {
-        server.sendMessageTo(message, client);
+    void HostGameMenuState::onPingReceive(std::shared_ptr<NetworkClient> &client, NetworkMessage &message) {
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point then;
+        message >> then;
+
+        // calc ping
+        uint16_t pingData = std::chrono::duration_cast<std::chrono::milliseconds>(now - then).count();
+
+        NetworkMessage toSend;
+        toSend.header.type = MessageType::KEEP_ALIVE;
+        toSend << now;
+
+        NetworkMessage pingDataMessage;
+        pingDataMessage.header.type = MessageType::PING;
+        pingDataMessage << client->getId();
+        pingDataMessage << pingData;
+
+        server.sendMessageTo(toSend, client);
+        server.sendMessageToAll(pingDataMessage);
     }
 
     bool HostGameMenuState::onPreConnect(std::shared_ptr<NetworkClient> &client) {
@@ -81,8 +98,15 @@ namespace Tetris {
         assignId.header.type = MessageType::ASSIGN_ID;
         assignId << client->getId();
 
+        // Send a test ping to the client, will maintain the RTT for the client
+        std::chrono::high_resolution_clock::time_point timestamp = std::chrono::high_resolution_clock::now();
+        NetworkMessage pingMessage;
+        pingMessage.header.type = MessageType::KEEP_ALIVE;
+        pingMessage << timestamp;
+
         server.sendMessageToAll(message);
         server.sendMessageTo(assignId, client);
+        server.sendMessageTo(pingMessage, client);
     }
 
     void HostGameMenuState::onDisconnect(std::shared_ptr<NetworkClient> &client) {
@@ -92,7 +116,7 @@ namespace Tetris {
         message.header.type = MessageType::DISCONNECT;
         message << client->getId();
 
-        server.sendMessageToAll(message);
+        server.sendMessageToAll(message, client->getId());
     }
 
 } // Tetris

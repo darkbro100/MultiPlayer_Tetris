@@ -13,7 +13,9 @@ namespace Tetris {
     class NetworkClient;
 
     enum class MessageType {
+        KEEP_ALIVE,
         PING,
+
         ASSIGN_ID,
         CONNECT,
         DISCONNECT
