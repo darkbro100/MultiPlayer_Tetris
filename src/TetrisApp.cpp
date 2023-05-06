@@ -187,4 +187,16 @@ namespace Tetris {
     void App::changeState(const std::shared_ptr<MenuState> & newState) {
         this->currentState = newState;
     }
+
+    void App::resize(int width, int height) {
+        SDL_SetWindowPosition(window, 0, 0);
+        SDL_SetWindowSize(window, width, height);
+    }
+
+    void App::maxWindowSize(int &w, int &h) {
+        SDL_DisplayMode dm;
+        SDL_GetDesktopDisplayMode(0, &dm);
+        w = dm.w;
+        h = dm.h;
+    }
 }

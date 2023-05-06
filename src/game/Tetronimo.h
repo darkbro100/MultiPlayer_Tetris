@@ -5,6 +5,7 @@
 #ifndef MPTETRIS_TETRONIMO_H
 #define MPTETRIS_TETRONIMO_H
 
+#include "GameCommon.h"
 
 namespace Tetris {
 
@@ -96,7 +97,7 @@ namespace Tetris {
          * @param field
          * @return
          */
-        static bool canFit(unsigned int shapeId, int x, int y, int rotation, const unsigned int * field);
+        static bool canFit(unsigned int shapeId, int x, int y, int rotation, uint8_t * field);
 
         /**
          * Places a piece in the field
@@ -106,7 +107,7 @@ namespace Tetris {
          * @param rotation Rotation of the shape
          * @param field Pointer to the field
          */
-        static void place(unsigned int shapeId, int x, int y, int rotation, unsigned int * field);
+        static void place(unsigned int shapeId, int x, int y, int rotation, uint8_t * field);
     };
 
 

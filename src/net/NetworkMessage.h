@@ -18,7 +18,13 @@ namespace Tetris {
 
         ASSIGN_ID,
         CONNECT,
-        DISCONNECT
+        DISCONNECT,
+
+        GAME_START,
+        GAME_END,
+
+        PLAYER_UPDATE,
+        PLAYER_SEND_LINES
     };
 
     struct NetworkMessageHeader {

@@ -6,10 +6,13 @@
 #define MPTETRIS_JOINGAMEMENUSTATE_H
 
 #include "MenuState.h"
+#include <map>
+#include "../../game/GameCommon.h"
 #include "../../net/NetworkClient.h"
 #include "../../net/NetworkMessage.h"
 #include "../../net/ConcurrentQueue.h"
 #include "asio.hpp"
+#include <random>
 
 namespace Tetris {
 
@@ -27,7 +30,11 @@ namespace Tetris {
         void render(SDL_Renderer *renderer, float ts) override;
 
     private:
+        void onMessage(NetworkMessage & msg);
         void onPingReceive(NetworkMessage& message);
+        void onConnect(std::shared_ptr<NetworkClient> & who);
+        void onDisconnect(std::shared_ptr<NetworkClient> & who);
+
 
         bool lastDownPress = false, lastReturnPress = false;
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
@@ -42,6 +49,11 @@ namespace Tetris {
         std::atomic<uint16_t> ping;
 
         FontHolder font, smallFont;
+        TextureHolder texture;
+        std::mt19937 engine;
+
+        std::map<uint32_t, Player> players;
+        bool gameStarted = false;
     };
 } // Tetris
 

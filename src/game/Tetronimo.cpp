@@ -33,30 +33,30 @@ namespace Tetris {
         return SHAPES[id];
     }
 
-    bool Tetromino::canFit(unsigned int shapeId, int x, int y, int rotation, const unsigned int *field) {
+    bool Tetromino::canFit(unsigned int shapeId, int x, int y, int rotation, uint8_t *field) {
         for (int i = 0; i < TETROMINO_SIZE; i++) {
             for (int j = 0; j < TETROMINO_SIZE; j++) {
                 int index = rotate(i, j, rotation);
                 int pX = x + i;
                 int pY = y + j;
 
-                int fieldIndex = pX + (pY * GameMenuStateSP::FIELD_WIDTH);
+                int fieldIndex = pX + (pY * FIELD_WIDTH);
 
-                if (SHAPES[shapeId][index] != 0 && field[fieldIndex] != GameMenuStateSP::EMPTY_ID)
+                if (SHAPES[shapeId][index] != 0 && field[fieldIndex] != EMPTY_ID)
                     return false;
             }
         }
         return true;
     }
 
-    void Tetromino::place(unsigned int shapeId, int x, int y, int rotation, unsigned int *field) {
+    void Tetromino::place(unsigned int shapeId, int x, int y, int rotation, uint8_t *field) {
         for (int i = 0; i < TETROMINO_SIZE; i++) {
             for (int j = 0; j < TETROMINO_SIZE; j++) {
                 int index = rotate(i, j, rotation);
                 int pX = x + i;
                 int pY = y + j;
 
-                int fieldIndex = pX + (pY * GameMenuStateSP::FIELD_WIDTH);
+                int fieldIndex = pX + (pY * FIELD_WIDTH);
 
                 if (SHAPES[shapeId][index] != 0)
                     field[fieldIndex] = shapeId + 1; // need to + 1 because EMPTY_ID starts at 0

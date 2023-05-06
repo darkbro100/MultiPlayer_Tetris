@@ -36,6 +36,19 @@ namespace Tetris {
         void run();
 
         /**
+         * Gets the current window width
+         * @return The current window width
+         */
+        static void maxWindowSize(int & w, int & h);
+
+        /**
+         * Resizes the window to the given width and height
+         * @param width Width of the window
+         * @param height Height of the window
+         */
+        void resize(int width, int height);
+
+        /**
          * Changes the current Menu that is being displayed/updated for the App.
          * @param newState The new MenuState to display/update
          */
@@ -68,7 +81,6 @@ namespace Tetris {
         const static Uint32 RENDER_FLAGS = SDL_RENDERER_ACCELERATED;
         const static int WINDOW_WIDTH = 1000;
         const static int WINDOW_HEIGHT = 1000;
-        constexpr static float ENTITY_SPEED = 300.0f;
     private:
         void initialize();
 
