@@ -14,24 +14,21 @@ namespace Tetris {
         std::random_device dev;
         engine.seed(dev());
 
+        // initialize player related variables
         player = {};
-        player.piece.current = engine() % 7;
-        player.piece.next = engine() % 7;
-        player.pos.x = FIELD_WIDTH / 2;
-        player.pos.y = 0;
-        player.pos.rotation = 0;
-        player.pos.storedRotation = 0;
+        resetPiece(player.piece, player.pos, player.speed, inputs, engine);
+        initField(player.field);
+
+        // initialize more game related vars
         player.speed.current = 0.7f;
         player.speed.timer = 0.0f;
         player.linesCreated = 0;
         player.score = 0;
 
+        // input related vars
         inputs.leftDelay = INPUT_DELAY;
         inputs.rightDelay = INPUT_DELAY;
         inputs.downDelay = INPUT_DELAY;
-
-        // Initialize the field
-        initField(player.field);
     }
 
     void GameMenuStateSP::loadComponents() {
