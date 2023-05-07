@@ -163,24 +163,24 @@ namespace Tetris {
             renderField(renderer, texture, startX, startY, serverPlayer->field, lines, serverPlayer->gameOver,
                         blockSize);
 
-            // Then render the server's current piece and other values
-            // Render current piece in
-            renderPiece(renderer, texture, serverPlayer->pos.x, serverPlayer->pos.y, serverPlayer->piece.current,
-                        serverPlayer->pos.rotation,
-                        startX, startY, 255, blockSize);
+            if (!serverPlayer->gameOver) {
+                // Then render the server's current piece and other values
+                // Render current piece in
+                renderPiece(renderer, texture, serverPlayer->pos.x, serverPlayer->pos.y, serverPlayer->piece.current,
+                            serverPlayer->pos.rotation,
+                            startX, startY, 255, blockSize);
 
-            // Render "ghost" piece (where it will land)
-            int ghostY = serverPlayer->pos.y;
-            while (Tetromino::canFit(serverPlayer->piece.current, serverPlayer->pos.x, ghostY + 1,
-                                     serverPlayer->pos.rotation,
-                                     serverPlayer->field)) {
-                ghostY++;
-            }
-            renderPiece(renderer, texture, serverPlayer->pos.x, ghostY, serverPlayer->piece.current,
-                        serverPlayer->pos.rotation, startX,
-                        startY, 50, blockSize);
-
-//            // Render the next piece under the score
+                // Render "ghost" piece (where it will land)
+                int ghostY = serverPlayer->pos.y;
+                while (Tetromino::canFit(serverPlayer->piece.current, serverPlayer->pos.x, ghostY + 1,
+                                         serverPlayer->pos.rotation,
+                                         serverPlayer->field)) {
+                    ghostY++;
+                }
+                renderPiece(renderer, texture, serverPlayer->pos.x, ghostY, serverPlayer->piece.current,
+                            serverPlayer->pos.rotation, startX,
+                            startY, 50, blockSize);
+                // Render the next piece under the score
 //            SDL_Rect textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 200, 150, 75};
 //            renderText(renderer, holder.font, "Next", {255, 255, 255, 255}, &textRect);
 //            renderPiece(renderer, texture, 0, 0, serverPlayer->piece.next, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
@@ -193,6 +193,12 @@ namespace Tetris {
 //                renderPiece(renderer, holder, 0, 0, serverPlayer->storedPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
 //                            startY + 425, 100);
 //            }
+            } else {
+                // Draw Game Over
+                SDL_Rect textRec = {startX + (FIELD_WIDTH * blockSize) / 2 - 100,
+                                    startY + (FIELD_HEIGHT * blockSize) / 2 - 50, 200, 100};
+                renderText(renderer, holder.font, "Lost", {255, 255, 255, 255}, &textRec);
+            }
 
             startX = startX + (FIELD_WIDTH * blockSize) + 20;
             std::vector<unsigned int> oLines;
@@ -206,9 +212,16 @@ namespace Tetris {
                 // Render the field
                 renderField(renderer, texture, startX, startY, player->field, oLines, player->gameOver, blockSize / 2);
 
-                // Render current piece in
-                renderPiece(renderer, texture, player->pos.x, player->pos.y, player->piece.current,
-                            player->pos.rotation, startX, startY, 255, blockSize / 2);
+                if (!player->gameOver)
+                    // Render current piece in
+                    renderPiece(renderer, texture, player->pos.x, player->pos.y, player->piece.current,
+                                player->pos.rotation, startX, startY, 255, blockSize / 2);
+                else {
+                    // Draw Game Over
+                    SDL_Rect textRec = {startX + (FIELD_WIDTH * (blockSize / 2)) / 2 - 50,
+                                startY + (FIELD_HEIGHT * (blockSize / 2)) / 2 - 25, 100, 50};
+                    renderText(renderer, holder.font, "Lost", {255, 255, 255, 255}, &textRec);
+                }
 
                 startX += (FIELD_WIDTH * blockSize / 2) + 20;
             }
@@ -267,8 +280,8 @@ namespace Tetris {
         pingMessage << timestamp;
 
         // Send a connect message with all the other online members
-        for(auto it = players.begin(); it != players.end(); it++) {
-            if(it->first == client->getId()) continue;
+        for (auto it = players.begin(); it != players.end(); it++) {
+            if (it->first == client->getId()) continue;
 
             NetworkMessage playerMsg;
             playerMsg.header.type = MessageType::CONNECT;

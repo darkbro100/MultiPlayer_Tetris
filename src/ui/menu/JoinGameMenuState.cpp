@@ -160,20 +160,27 @@ namespace Tetris {
             auto player = players[client->getId()];
             renderField(renderer, texture, startX, startY, player->field, lines, player->gameOver, blockSize);
 
-            // Then render the client's piece
-            renderPiece(renderer, texture, player->pos.x, player->pos.y, player->piece.current, player->pos.rotation,
-                        startX, startY, 255, blockSize);
+            if(!player->gameOver) {
+                // Then render the client's piece
+                renderPiece(renderer, texture, player->pos.x, player->pos.y, player->piece.current, player->pos.rotation,
+                            startX, startY, 255, blockSize);
 
-            // Render "ghost" piece (where it will land)
-            int ghostY = player->pos.y;
-            while (Tetromino::canFit(player->piece.current, player->pos.x, ghostY + 1,
-                                     player->pos.rotation,
-                                     player->field)) {
-                ghostY++;
+                // Render "ghost" piece (where it will land)
+                int ghostY = player->pos.y;
+                while (Tetromino::canFit(player->piece.current, player->pos.x, ghostY + 1,
+                                         player->pos.rotation,
+                                         player->field)) {
+                    ghostY++;
+                }
+                renderPiece(renderer, texture, player->pos.x, ghostY, player->piece.current,
+                            player->pos.rotation, startX,
+                            startY, 50, blockSize);
+            } else {
+                // Draw Game Over
+                SDL_Rect textRec = {startX + (FIELD_WIDTH * blockSize) / 2 - 100,
+                                    startY + (FIELD_HEIGHT * blockSize) / 2 - 50, 200, 100};
+                renderText(renderer, font.font, "Lost", {255, 255, 255, 255}, &textRec);
             }
-            renderPiece(renderer, texture, player->pos.x, ghostY, player->piece.current,
-                        player->pos.rotation, startX,
-                        startY, 50, blockSize);
 
             startX = startX + (FIELD_WIDTH * blockSize) + 20;
 
@@ -185,8 +192,16 @@ namespace Tetris {
                 // Render other player fields and pieces
                 renderField(renderer, texture, startX, startY, it.second->field, oLines, it.second->gameOver,
                             blockSize / 2);
-                renderPiece(renderer, texture, it.second->pos.x, it.second->pos.y, it.second->piece.current,
-                            it.second->pos.rotation, startX, startY, 255, blockSize / 2);
+
+                if(!it.second->gameOver) {
+                    renderPiece(renderer, texture, it.second->pos.x, it.second->pos.y, it.second->piece.current,
+                                it.second->pos.rotation, startX, startY, 255, blockSize / 2);
+                } else {
+                    // Draw Game Over
+                    SDL_Rect textRec = {startX + (FIELD_WIDTH * (blockSize / 2)) / 2 - 50,
+                                        startY + (FIELD_HEIGHT * (blockSize / 2)) / 2 - 25, 100, 50};
+                    renderText(renderer, font.font, "Lost", {255, 255, 255, 255}, &textRec);
+                }
 
                 startX += (FIELD_WIDTH * blockSize / 2) + 20;
             }
