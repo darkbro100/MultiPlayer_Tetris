@@ -6,7 +6,7 @@
 #define MPTETRIS_HOSTGAMEMENUSTATE_H
 
 #include "../../game/GameCommon.h"
-#include <map>
+#include <unordered_map>
 #include "MenuState.h"
 #include "../../net/NetworkServer.h"
 #include <random>
@@ -41,7 +41,7 @@ namespace Tetris {
         int selectedButton = 0;
         std::mt19937 engine;
 
-        std::map<uint32_t, Player> players;
+        std::unordered_map<uint32_t, std::shared_ptr<Player>> players;
         bool gameStarted = false;
 
         std::vector<unsigned int> lines;

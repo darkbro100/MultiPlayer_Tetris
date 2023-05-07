@@ -23,19 +23,13 @@ namespace Tetris {
         std::random_device dev;
         engine.seed(dev());
 
-        Player serverPlayer{};
-        serverPlayer.piece.current = 5;
-        serverPlayer.piece.next = engine() % 7;
-        serverPlayer.pos.x = FIELD_WIDTH / 2;
-        serverPlayer.pos.y = 0;
-        serverPlayer.pos.rotation = 0;
-        serverPlayer.pos.storedRotation = 0;
-        serverPlayer.speed.current = 0.7f;
-        serverPlayer.speed.timer = 0.0f;
-        serverPlayer.lines = 0;
-        serverPlayer.score = 0;
-        initField(serverPlayer.field);
-        serverPlayer.id = 1;
+        std::shared_ptr<Player> serverPlayer = std::make_shared<Player>();
+        resetPiece(serverPlayer->piece, serverPlayer->pos, serverPlayer->speed, inputs, engine);
+        initField(serverPlayer->field);
+        serverPlayer->speed.timer = 0.0f;
+        serverPlayer->speed.current = 0.7f;
+        serverPlayer->id = 1;
+
         players[1] = serverPlayer;
 
         // Ensure input holder is setup
@@ -84,103 +78,69 @@ namespace Tetris {
         }
 
         if (gameStarted) {
-            Player &player = players[1];
-            if (!player.gameOver) {
+            std::shared_ptr<Player> player = players[1];
+            if (!player->gameOver) {
 
                 // Check if any lines are happening. If there are, don't let anything else happen, shift the lines down
                 if (!lines.empty()) {
-                    player.speed.timer += ts;
-                    if (player.speed.timer >= player.speed.current) {
-                        for (auto &line: lines) {
-                            for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                                int index = line * FIELD_WIDTH + x;
-                                player.field[index] = EMPTY_ID;
-                            }
-
-                            for (int y = line; y > 0; y--) {
-                                for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                                    int index = y * FIELD_WIDTH + x;
-                                    player.field[index] = player.field[index - FIELD_WIDTH];
-                                }
-                            }
-                        }
+                    player->speed.timer += ts;
+                    if (player->speed.timer >= player->speed.current) {
+                        clearLines(player->field, lines);
 
                         // Update lines cleared & clear the vector
-                        player.lines += lines.size();
-                        player.score += (1 << lines.size()) * 100;
+                        player->lines += lines.size();
+                        player->score += (1 << lines.size()) * 100;
                         lines.clear();
 
                         // Update timings to be the normal game timings TODO: store previous timings
-                        player.speed.timer = 0.0f;
-                        player.speed.current = 0.7f;
+                        player->speed.timer = 0.0f;
+                        player->speed.current = 0.7f;
                     }
+
+                    // Send update message
+                    NetworkMessage gameStateMessage;
+                    gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
+                    gameStateMessage << *player;
+                    server.sendMessageToAll(gameStateMessage);
 
                     return;
                 }
 
                 // Input handling
-                checkInputs(inputs, app, player.piece, player.pos, player.speed, player.field);
+                checkInputs(inputs, app, player->piece, player->pos, player->speed, player->field, engine);
 
-                player.speed.timer += ts;
-                if (player.speed.timer >= player.speed.current) {
-                    player.speed.timer = 0.0f;
+                player->speed.timer += ts;
+                if (player->speed.timer >= player->speed.current) {
+                    player->speed.timer = 0.0f;
 
                     // Check if can move down
-                    if (Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y + 1, player.pos.rotation,
-                                          player.field)) {
-                        player.pos.y++;
+                    if (Tetromino::canFit(player->piece.current, player->pos.x, player->pos.y + 1, player->pos.rotation,
+                                          player->field)) {
+                        player->pos.y++;
                     } else {
                         // Place the piece
-                        Tetromino::place(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
-                                         player.field);
+                        Tetromino::place(player->piece.current, player->pos.x, player->pos.y, player->pos.rotation,
+                                         player->field);
 
                         // Check for lines
-                        for (int y = 0; y < Tetromino::TETROMINO_SIZE; y++) {
-                            if (player.pos.y + y >= FIELD_HEIGHT - 1)
-                                continue;
-
-                            bool line = true;
-
-                            // If a line has an empty slot
-                            for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                                int index = (y + player.pos.y) * FIELD_WIDTH + x;
-                                if (player.field[index] == EMPTY_ID) {
-                                    line = false;
-                                }
-                            }
-
-                            if (line) {
-                                lines.push_back(player.pos.y + y);
-                                player.speed.timer = 0.0f;
-                                player.speed.current = 0.25f;
-                            }
-                        }
+                        checkLines(player->field, lines, player->pos, player->speed);
 
                         // Generate new piece
-                        player.piece.current = player.piece.next;
-                        player.piece.next = engine() % 7;
-                        player.pos.x = FIELD_WIDTH / 2;
-                        player.pos.y = 0;
-                        player.pos.rotation = 0;
-                        player.pos.storedRotation = 0;
-                        player.speed.timer = 0.0f;
-                        player.piece.hasStored = false;
-                        inputs.leftDelay = INPUT_DELAY;
-                        inputs.rightDelay = INPUT_DELAY;
-                        inputs.downDelay = INPUT_DELAY;
+                        resetPiece(player->piece, player->pos, player->speed, inputs, engine);
 
-                        if (!Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
-                                               player.field))
-                            player.gameOver = true;
+                        if (!Tetromino::canFit(player->piece.current, player->pos.x, player->pos.y,
+                                               player->pos.rotation,
+                                               player->field))
+                            player->gameOver = true;
                     }
                 }
-            }
 
-            // Send our game state
-            NetworkMessage gameStateMessage;
-            gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
-            gameStateMessage << player;
-            server.sendMessageToAll(gameStateMessage);
+                // Send our game state
+                NetworkMessage gameStateMessage;
+                gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
+                gameStateMessage << *player;
+                server.sendMessageToAll(gameStateMessage);
+            }
         }
     }
 
@@ -198,38 +158,39 @@ namespace Tetris {
             int startX = 50;
             int startY = 150;
             int blockSize = 25;
-            Player &serverPlayer = players[1];
+            std::shared_ptr<Player> serverPlayer = players[1];
 
-            renderField(renderer, texture, startX, startY, serverPlayer.field, lines, serverPlayer.gameOver, blockSize);
+            renderField(renderer, texture, startX, startY, serverPlayer->field, lines, serverPlayer->gameOver,
+                        blockSize);
 
             // Then render the server's current piece and other values
             // Render current piece in
-            renderPiece(renderer, texture, serverPlayer.pos.x, serverPlayer.pos.y, serverPlayer.piece.current,
-                        serverPlayer.pos.rotation,
+            renderPiece(renderer, texture, serverPlayer->pos.x, serverPlayer->pos.y, serverPlayer->piece.current,
+                        serverPlayer->pos.rotation,
                         startX, startY, 255, blockSize);
 
             // Render "ghost" piece (where it will land)
-            int ghostY = serverPlayer.pos.y;
-            while (Tetromino::canFit(serverPlayer.piece.current, serverPlayer.pos.x, ghostY + 1,
-                                     serverPlayer.pos.rotation,
-                                     serverPlayer.field)) {
+            int ghostY = serverPlayer->pos.y;
+            while (Tetromino::canFit(serverPlayer->piece.current, serverPlayer->pos.x, ghostY + 1,
+                                     serverPlayer->pos.rotation,
+                                     serverPlayer->field)) {
                 ghostY++;
             }
-            renderPiece(renderer, texture, serverPlayer.pos.x, ghostY, serverPlayer.piece.current,
-                        serverPlayer.pos.rotation, startX,
+            renderPiece(renderer, texture, serverPlayer->pos.x, ghostY, serverPlayer->piece.current,
+                        serverPlayer->pos.rotation, startX,
                         startY, 50, blockSize);
 
 //            // Render the next piece under the score
 //            SDL_Rect textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 200, 150, 75};
 //            renderText(renderer, holder.font, "Next", {255, 255, 255, 255}, &textRect);
-//            renderPiece(renderer, texture, 0, 0, serverPlayer.piece.next, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
+//            renderPiece(renderer, texture, 0, 0, serverPlayer->piece.next, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
 //                        startY + 225, 100, blockSize);
 //
 //            // Render the stored piece directly under the next piece
-//            if (serverPlayer.storedPiece != INVALID_SHAPE) {
+//            if (serverPlayer->storedPiece != INVALID_SHAPE) {
 //                textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 400, 150, 75};
 //                renderText(renderer, fontHolder.font, "Stored", {255, 255, 255, 255}, &textRect);
-//                renderPiece(renderer, holder, 0, 0, serverPlayer.storedPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
+//                renderPiece(renderer, holder, 0, 0, serverPlayer->storedPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
 //                            startY + 425, 100);
 //            }
 
@@ -240,14 +201,14 @@ namespace Tetris {
             for (auto &it: players) {
                 // ignore if it's the server (we rendered it above)
                 if (it.first == 1) continue;
-                Player player = it.second;
+                std::shared_ptr<Player> player = it.second;
 
                 // Render the field
-                renderField(renderer, texture, startX, startY, player.field, oLines, player.gameOver, blockSize / 2);
+                renderField(renderer, texture, startX, startY, player->field, oLines, player->gameOver, blockSize / 2);
 
                 // Render current piece in
-                renderPiece(renderer, texture, player.pos.x, player.pos.y, player.piece.current,
-                            player.pos.rotation, startX, startY, 255, blockSize / 2);
+                renderPiece(renderer, texture, player->pos.x, player->pos.y, player->piece.current,
+                            player->pos.rotation, startX, startY, 255, blockSize / 2);
 
                 startX += (FIELD_WIDTH * blockSize / 2) + 20;
             }
@@ -263,7 +224,7 @@ namespace Tetris {
         uint16_t pingData = std::chrono::duration_cast<std::chrono::milliseconds>(now - then).count();
 
         // update ping for the server
-        players[client->getId()].ping = pingData;
+        players[client->getId()]->ping = pingData;
 
         // network message to send to all clients
         NetworkMessage toSend;
@@ -285,11 +246,11 @@ namespace Tetris {
         std::cout << "[HGMS] Client connected: " << client->getId() << std::endl;
 
         // Add to player map
-        Player player{};
-        player.id = client->getId();
-        initField(player.field);
-
-        players[client->getId()] = player;
+        std::shared_ptr<Player> player = std::make_shared<Player>();
+        resetPiece(player->piece, player->pos, player->speed, inputs, engine);
+        initField(player->field);
+        player->id = client->getId();
+        players.insert_or_assign(player->id, player);
 
         NetworkMessage message;
         message.header.type = MessageType::CONNECT;
@@ -305,14 +266,19 @@ namespace Tetris {
         pingMessage.header.type = MessageType::KEEP_ALIVE;
         pingMessage << timestamp;
 
-        NetworkMessage serverMsg;
-        serverMsg.header.type = MessageType::CONNECT;
-        serverMsg << 1;
+        // Send a connect message with all the other online members
+        for(auto it = players.begin(); it != players.end(); it++) {
+            if(it->first == client->getId()) continue;
 
-        server.sendMessageToAll(message);
+            NetworkMessage playerMsg;
+            playerMsg.header.type = MessageType::CONNECT;
+            playerMsg << it->second->id;
+            server.sendMessageTo(playerMsg, client);
+        }
+
         server.sendMessageTo(assignId, client);
         server.sendMessageTo(pingMessage, client);
-        server.sendMessageTo(serverMsg, client);
+        server.sendMessageToAll(message, client->getId());
     }
 
     void HostGameMenuState::onDisconnect(std::shared_ptr<NetworkClient> &client) {
@@ -336,6 +302,21 @@ namespace Tetris {
             }
             case MessageType::PLAYER_UPDATE: {
                 server.sendMessageToAll(msg, client->getId());
+
+                Player player{};
+                msg >> player;
+
+                std::shared_ptr<Player> playerPtr = players[player.id];
+                playerPtr->pos = player.pos;
+                playerPtr->piece = player.piece;
+                playerPtr->gameOver = player.gameOver;
+                playerPtr->lines = player.lines;
+                playerPtr->score = player.score;
+                playerPtr->ping = player.ping;
+                playerPtr->speed = player.speed;
+                playerPtr->id = player.id;
+                memcpy(playerPtr->field, player.field, sizeof(player.field));
+
                 break;
             }
             default:

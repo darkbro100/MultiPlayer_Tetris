@@ -10,7 +10,7 @@
 #include "SDL_image.h"
 #include <string>
 #include "../game/GameCommon.h"
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include "AssetHelper.h"
 
@@ -55,7 +55,7 @@ namespace Tetris {
      */
     void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, Uint8 alpha = 255);
 
-    void renderPlayers(SDL_Renderer * renderer, std::map<uint32_t, Player> & players, FontHolder & holder, uint32_t id = 1);
+    void renderPlayers(SDL_Renderer * renderer, std::unordered_map<uint32_t, std::shared_ptr<Player>> & players, FontHolder & holder, uint32_t id = 1);
 
     /**
      * Renders a piece on the field

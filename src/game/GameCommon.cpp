@@ -22,7 +22,7 @@ namespace Tetris {
         }
     }
 
-    void checkInputs(InputHolder &holder, App *app, PlayerPiece & piece, PlayerPos &pos, PlayerSpeed & speed, uint8_t * field) {
+    void checkInputs(InputHolder &holder, App *app, PlayerPiece & piece, PlayerPos &pos, PlayerSpeed & speed, uint8_t * field, std::mt19937 & engine) {
         // Updating variables based on input
         bool isInstantPressed = app->isKeyPressed(INSTANT_DROP_KEY);
         bool isRotatePressed = app->isKeyPressed(ROTATE_KEY);
@@ -55,6 +55,7 @@ namespace Tetris {
             if(piece.stored == INVALID_SHAPE) {
                 piece.stored = piece.current;
                 piece.current = piece.next;
+                piece.next = engine() % 7;
             } else {
                 unsigned int temp = piece.stored;
                 piece.stored = piece.current;
@@ -141,5 +142,60 @@ namespace Tetris {
             speed.timer = speed.current;
         }
 
+    }
+
+    void checkLines(uint8_t *field, std::vector<unsigned int> &lines, PlayerPos & pos, PlayerSpeed & speed) {
+        // Check for lines
+        for (int y = 0; y < Tetromino::TETROMINO_SIZE; y++) {
+            if (pos.y + y >= FIELD_HEIGHT - 1)
+                continue;
+
+            bool line = true;
+
+            // If a line has an empty slot
+            for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+                int index = (y + pos.y) * FIELD_WIDTH + x;
+                if (field[index] == EMPTY_ID) {
+                    line = false;
+                }
+            }
+
+            if (line) {
+                lines.push_back(pos.y + y);
+                speed.timer = 0.0f;
+                speed.current = 0.25f;
+            }
+        }
+    }
+
+    void Tetris::resetPiece(PlayerPiece &piece, PlayerPos &pos, PlayerSpeed &speed, InputHolder &inputs,
+                            std::mt19937 &engine) {
+        piece.current = piece.next;
+        piece.next = engine() % 7;
+        pos.x = FIELD_WIDTH / 2;
+        pos.y = 0;
+        pos.rotation = 0;
+        pos.storedRotation = 0;
+        speed.timer = 0.0f;
+        piece.hasStored = false;
+        inputs.leftDelay = INPUT_DELAY;
+        inputs.rightDelay = INPUT_DELAY;
+        inputs.downDelay = INPUT_DELAY;
+    }
+
+    void clearLines(uint8_t *field, std::vector<unsigned int> &lines) {
+        for (auto &line: lines) {
+            for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+                int index = line * FIELD_WIDTH + x;
+                field[index] = EMPTY_ID;
+            }
+
+            for (int y = line; y > 0; y--) {
+                for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+                    int index = y * FIELD_WIDTH + x;
+                    field[index] = field[index - FIELD_WIDTH];
+                }
+            }
+        }
     }
 }

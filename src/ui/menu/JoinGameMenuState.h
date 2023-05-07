@@ -6,7 +6,7 @@
 #define MPTETRIS_JOINGAMEMENUSTATE_H
 
 #include "MenuState.h"
-#include <map>
+#include <unordered_map>
 #include "../../game/GameCommon.h"
 #include "../../net/NetworkClient.h"
 #include "../../net/NetworkMessage.h"
@@ -46,13 +46,16 @@ namespace Tetris {
 
         std::atomic_int8_t connectionStatus;
         std::atomic<uint16_t> ping;
+        InputHolder inputs{};
 
         FontHolder font, smallFont;
         TextureHolder texture;
         std::mt19937 engine;
 
-        std::map<uint32_t, Player> players;
+        std::unordered_map<uint32_t, std::shared_ptr<Player>> players;
         bool gameStarted = false;
+
+        std::vector<unsigned int> lines;
     };
 } // Tetris
 

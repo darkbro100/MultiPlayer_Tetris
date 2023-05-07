@@ -15,7 +15,7 @@ namespace Tetris {
         engine.seed(dev());
 
         player = {};
-        player.piece.current = 5;
+        player.piece.current = engine() % 7;
         player.piece.next = engine() % 7;
         player.pos.x = FIELD_WIDTH / 2;
         player.pos.y = 0;
@@ -59,19 +59,7 @@ namespace Tetris {
         if (!player.lines.empty()) {
             player.speed.timer += ts;
             if (player.speed.timer >= player.speed.current) {
-                for (auto &line: player.lines) {
-                    for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                        int index = line * FIELD_WIDTH + x;
-                        player.field[index] = EMPTY_ID;
-                    }
-
-                    for (int y = line; y > 0; y--) {
-                        for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                            int index = y * FIELD_WIDTH + x;
-                            player.field[index] = player.field[index - FIELD_WIDTH];
-                        }
-                    }
-                }
+                clearLines(player.field, player.lines);
 
                 // Update lines cleared & clear the vector
                 player.linesCreated += player.lines.size();
@@ -87,7 +75,7 @@ namespace Tetris {
         }
 
         // Check inputs
-        checkInputs(inputs, app, player.piece, player.pos, player.speed, player.field);
+        checkInputs(inputs, app, player.piece, player.pos, player.speed, player.field, engine);
 
         // Game timings
         player.speed.timer += ts;
@@ -104,39 +92,10 @@ namespace Tetris {
                                  player.field);
 
                 // Check for lines
-                for (int y = 0; y < Tetromino::TETROMINO_SIZE; y++) {
-                    if (player.pos.y + y >= FIELD_HEIGHT - 1)
-                        continue;
-
-                    bool line = true;
-
-                    // If a line has an empty slot
-                    for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                        int index = (y + player.pos.y) * FIELD_WIDTH + x;
-                        if (player.field[index] == EMPTY_ID) {
-                            line = false;
-                        }
-                    }
-
-                    if (line) {
-                        player.lines.push_back(player.pos.y + y);
-                        player.speed.timer = 0.0f;
-                        player.speed.current = 0.25f;
-                    }
-                }
+                checkLines(player.field, player.lines, player.pos, player.speed);
 
                 // Generate new piece
-                player.piece.current = player.piece.next;
-                player.piece.next = engine() % 7;
-                player.pos.x = FIELD_WIDTH / 2;
-                player.pos.y = 0;
-                player.pos.rotation = 0;
-                player.pos.storedRotation = 0;
-                player.speed.timer = 0.0f;
-                player.piece.hasStored = false;
-                inputs.leftDelay = INPUT_DELAY;
-                inputs.rightDelay = INPUT_DELAY;
-                inputs.downDelay = INPUT_DELAY;
+                resetPiece(player.piece, player.pos, player.speed, inputs, engine);
 
                 if (!Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
                                        player.field))

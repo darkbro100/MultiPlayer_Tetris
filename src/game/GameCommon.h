@@ -9,6 +9,7 @@
 #include "Tetronimo.h"
 #include "../net/NetworkClient.h"
 #include <map>
+#include <random>
 
 namespace Tetris {
 
@@ -98,7 +99,13 @@ namespace Tetris {
     /**
      * All the code for checking all the input related things is put here because it is a lot of code
      */
-    void checkInputs(InputHolder &holder, App *app, PlayerPiece & piece, PlayerPos &pos, PlayerSpeed & speed, uint8_t * field);
+    void checkInputs(InputHolder &holder, App *app, PlayerPiece & piece, PlayerPos &pos, PlayerSpeed & speed, uint8_t * field, std::mt19937 & engine);
+
+    void checkLines(uint8_t *field, std::vector<unsigned int> &lines, PlayerPos & pos, PlayerSpeed & speed);
+
+    void clearLines(uint8_t * field, std::vector<unsigned int> & lines);
+
+    void resetPiece(PlayerPiece & piece, PlayerPos & pos, PlayerSpeed & speed, InputHolder & inputs, std::mt19937 & engine);
 }
 
 #endif //MPTETRIS_GAMECOMMON_H

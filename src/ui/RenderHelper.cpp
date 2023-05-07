@@ -48,7 +48,7 @@ namespace Tetris {
         }
     }
 
-    void renderPlayers(SDL_Renderer *renderer, std::map<uint32_t, Player> &players, FontHolder & holder, uint32_t id) {
+    void renderPlayers(SDL_Renderer *renderer, std::unordered_map<uint32_t, std::shared_ptr<Player>> &players, FontHolder & holder, uint32_t id) {
         // Render how many connected players under fps text
         int startY = 150;
         int inc = 50;
@@ -65,10 +65,10 @@ namespace Tetris {
             // Render the players
             for (auto &player: players) {
                 std::string playerText;
-                if(player.second.id == id) {
-                    playerText = std::to_string(player.first) + " (You) - " + std::to_string(player.second.ping) + "ms";
+                if(player.second->id == id) {
+                    playerText = std::to_string(player.first) + " (You) - " + std::to_string(player.second->ping) + "ms";
                 } else {
-                    playerText = std::to_string(player.first) + " - " + std::to_string(player.second.ping) + "ms";
+                    playerText = std::to_string(player.first) + " - " + std::to_string(player.second->ping) + "ms";
                 }
                 dst = {x, y, 200, inc};
                 renderText(renderer, holder.font, playerText, {255, 255, 255, 255}, &dst);
