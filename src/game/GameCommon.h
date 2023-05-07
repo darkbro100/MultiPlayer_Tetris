@@ -106,6 +106,15 @@ namespace Tetris {
     void clearLines(uint8_t * field, std::vector<unsigned int> & lines);
 
     void resetPiece(PlayerPiece & piece, PlayerPos & pos, PlayerSpeed & speed, InputHolder & inputs, std::mt19937 & engine);
+
+    int getPlace(std::vector<uint32_t> placements, uint32_t id, int totalPlayers);
+
+    /**
+     * Formats the placement to a string. (ie. 1 = 1st, 2 = 2nd, etc.)
+     * @param place Placement number
+     * @return String representing the placement
+     */
+    std::string formatPlacement(int place);
 }
 
 #endif //MPTETRIS_GAMECOMMON_H

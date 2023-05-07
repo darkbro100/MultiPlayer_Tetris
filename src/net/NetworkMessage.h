@@ -24,7 +24,9 @@ namespace Tetris {
         GAME_END,
 
         PLAYER_UPDATE,
-        PLAYER_SEND_LINES
+        PLAYER_SEND_LINES,
+        PLAYER_LOST,
+        PLAYER_WON
     };
 
     struct NetworkMessageHeader {

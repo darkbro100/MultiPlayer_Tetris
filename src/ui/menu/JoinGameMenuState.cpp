@@ -118,8 +118,18 @@ namespace Tetris {
 
                         if (!Tetromino::canFit(player->piece.current, player->pos.x, player->pos.y,
                                                player->pos.rotation,
-                                               player->field))
+                                               player->field)) {
+
                             player->gameOver = true;
+                            placements.push_back(player->id);
+
+                            // Send a network message letting everyone know they have lost
+                            NetworkMessage gameOverMessage;
+                            gameOverMessage.header.type = MessageType::PLAYER_LOST;
+                            gameOverMessage << player->id;
+                            client->send(gameOverMessage);
+                            return;
+                        }
                     }
                 }
 
@@ -180,6 +190,16 @@ namespace Tetris {
                 SDL_Rect textRec = {startX + (FIELD_WIDTH * blockSize) / 2 - 100,
                                     startY + (FIELD_HEIGHT * blockSize) / 2 - 50, 200, 100};
                 renderText(renderer, font.font, "Lost", {255, 255, 255, 255}, &textRec);
+
+                // Draw placement directly under
+                textRec.y += textRec.h;
+                textRec.w /= 2;
+                textRec.h /= 2;
+                textRec.x += textRec.w / 2;
+
+                int place = getPlace(placements, client->getId(), players.size());
+                std::string placeStr = formatPlacement(place);
+                renderText(renderer, font.font, placeStr, {255, 255, 255, 255}, &textRec);
             }
 
             startX = startX + (FIELD_WIDTH * blockSize) + 20;
@@ -201,6 +221,16 @@ namespace Tetris {
                     SDL_Rect textRec = {startX + (FIELD_WIDTH * (blockSize / 2)) / 2 - 50,
                                         startY + (FIELD_HEIGHT * (blockSize / 2)) / 2 - 25, 100, 50};
                     renderText(renderer, font.font, "Lost", {255, 255, 255, 255}, &textRec);
+
+                    // Draw placement directly under
+                    textRec.y += textRec.h;
+                    textRec.w /= 2;
+                    textRec.h /= 2;
+                    textRec.x += textRec.w / 2;
+
+                    int place = getPlace(placements, it.second->id, players.size());
+                    std::string placeStr = formatPlacement(place);
+                    renderText(renderer, font.font, placeStr, {255, 255, 255, 255}, &textRec);
                 }
 
                 startX += (FIELD_WIDTH * blockSize / 2) + 20;
@@ -259,7 +289,12 @@ namespace Tetris {
                 uint32_t id;
                 msg >> id;
 
+                // erase from containers
+                auto it = std::find(placements.begin(), placements.end(), id);
+                if(it != placements.end())
+                    placements.erase(it);
                 players.erase(id);
+
                 std::cout << "[JGMS] Client disconnected from server with ID: " << id << std::endl;
                 break;
             }
@@ -275,22 +310,46 @@ namespace Tetris {
             }
             case MessageType::GAME_START: {
                 gameStarted = true;
+                placements.clear();
+
                 break;
             }
             case MessageType::PLAYER_UPDATE: {
                 Player player{};
                 msg >> player;
 
+                // grab shared ptr, convert it to a reference, then call memcpy
                 std::shared_ptr<Player> playerPtr = players[player.id];
-                playerPtr->pos = player.pos;
-                playerPtr->piece = player.piece;
-                playerPtr->gameOver = player.gameOver;
-                playerPtr->lines = player.lines;
-                playerPtr->score = player.score;
-                playerPtr->ping = player.ping;
-                playerPtr->speed = player.speed;
-                playerPtr->id = player.id;
-                memcpy(playerPtr->field, player.field, sizeof(player.field));
+                Player & pl = *playerPtr;
+
+                memcpy(&pl, &player, sizeof(Player));
+
+                break;
+            }
+            case MessageType::PLAYER_LOST: {
+                uint32_t id;
+                msg >> id;
+                players[id]->gameOver = true;
+                placements.push_back(id);
+
+                break;
+            }
+            case MessageType::PLAYER_WON: {
+                uint32_t winner;
+                msg >> winner;
+
+                players[winner]->gameOver = true;
+                placements.push_back(winner);
+
+                break;
+            }
+            case MessageType::GAME_END: {
+                gameStarted = false;
+
+                std::shared_ptr<Player> pl = players[client->getId()];
+                resetPiece(pl->piece, pl->pos, pl->speed, inputs, engine);
+                initField(pl->field);
+                pl->gameOver = false;
 
                 break;
             }

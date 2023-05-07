@@ -43,6 +43,8 @@ namespace Tetris {
 
         std::unordered_map<uint32_t, std::shared_ptr<Player>> players;
         bool gameStarted = false;
+        float gameOverTimer = 0;
+        std::vector<uint32_t> placements;
 
         std::vector<unsigned int> lines;
     };

@@ -198,4 +198,46 @@ namespace Tetris {
             }
         }
     }
+
+    int getPlace(std::vector<uint32_t> placements, uint32_t id, int totalPlayers) {
+        // push_back is called once a player loses. This means that the player who just lost is at the end of the vector
+
+        /**
+         * 4 Players Total
+         * 3 Players in the List
+         * Player at the end of the list just recently lost (2nd place) (they are essentially placements.end() - 1)
+         * 2nd Place is 4 - (3 - 1) = 2
+         * 3rd Place is 4 - (2 - 1) = 3
+         * 4th Place is 4 - (1 - 1) = 4
+         *
+         * 1st place is 4 - (2 - 1) = 3
+         * 2nd place is 4 - (2 - 2) = 4
+         * 3rd place is 4 - (2 - 3) = 5
+         * 4th place is 4 - (2 - 4) = 6
+         */
+
+        auto it = std::find(placements.begin(), placements.end(), id);
+        if(it != placements.end()) {
+            return totalPlayers - (it - placements.begin());
+        } else {
+            return 1;
+        }
+    }
+
+    std::string formatPlacement(int place) {
+
+        // 1st, 2nd, 3rd, 4th, 5th, 6th, 7th, 8th, 9th, 10th, 11th, 12th, 13th, 14th, 21st, 22nd, 23rd, etc.
+        std::string str;
+        if(place % 10 == 1 && place % 100 != 11) {
+            str = std::to_string(place) + "st";
+        } else if(place % 10 == 2 && place % 100 != 12) {
+            str = std::to_string(place) + "nd";
+        } else if(place % 10 == 3 && place % 100 != 13) {
+            str = std::to_string(place) + "rd";
+        } else {
+            str = std::to_string(place) + "th";
+        }
+
+        return str;
+    }
 }

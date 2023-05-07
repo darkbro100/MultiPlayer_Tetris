@@ -53,6 +53,8 @@ namespace Tetris {
         std::mt19937 engine;
 
         std::unordered_map<uint32_t, std::shared_ptr<Player>> players;
+        std::vector<uint32_t> placements;
+
         bool gameStarted = false;
 
         std::vector<unsigned int> lines;
