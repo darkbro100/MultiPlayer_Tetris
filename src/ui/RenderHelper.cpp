@@ -114,7 +114,7 @@ namespace Tetris {
         }
     }
 
-    void Tetris::renderField(SDL_Renderer *renderer, TextureHolder &holder, int startX, int startY, uint8_t *field,
+    void Tetris::renderField(SDL_Renderer *renderer, TextureHolder &holder, int startX, int startY, const uint8_t *field,
                              std::vector<unsigned int> &lines, bool gameOver, int cellSize) {
 
         // Render the field
@@ -146,7 +146,7 @@ namespace Tetris {
                     int textureX = TEXTURE_SIZE * (id - 1);
 
                     SDL_Rect srcRect = {textureX + TEXTURE_BORDER, TEXTURE_BORDER, 460, 460};
-                    SDL_Rect dstRec = {posX, posY, CELL_SIZE, CELL_SIZE};
+                    SDL_Rect dstRec = {posX, posY, cellSize, cellSize};
 
                     // If a line exists on this row, use the boundary texture instead of the normal texture, otherwise draw it normally
                     if (std::count(lines.begin(), lines.end(), y) > 0) {

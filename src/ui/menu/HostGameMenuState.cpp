@@ -24,20 +24,24 @@ namespace Tetris {
         engine.seed(dev());
 
         Player serverPlayer{};
-        serverPlayer.currentPiece = 5;
-        serverPlayer.nextPiece = engine() % 7;
-        serverPlayer.currentX = FIELD_WIDTH / 2;
-        serverPlayer.currentY = 0;
-//        serverPlayer.currentRotation = 0;
-//        serverPlayer.storedRotation = 0;
-        serverPlayer.currentSpeed = 0.7f;
-//        serverPlayer.currentSpeedTimer = 0.0f;
-//        serverPlayer.linesCreated = 0;
-//        serverPlayer.score = 0;
+        serverPlayer.piece.current = 5;
+        serverPlayer.piece.next = engine() % 7;
+        serverPlayer.pos.x = FIELD_WIDTH / 2;
+        serverPlayer.pos.y = 0;
+        serverPlayer.pos.rotation = 0;
+        serverPlayer.pos.storedRotation = 0;
+        serverPlayer.speed.current = 0.7f;
+        serverPlayer.speed.timer = 0.0f;
+        serverPlayer.lines = 0;
+        serverPlayer.score = 0;
         initField(serverPlayer.field);
         serverPlayer.id = 1;
-
         players[1] = serverPlayer;
+
+        // Ensure input holder is setup
+        inputs.leftDelay = INPUT_DELAY;
+        inputs.rightDelay = INPUT_DELAY;
+        inputs.downDelay = INPUT_DELAY;
 
         // Ensure this is updated in case the user is already holding return
         lastReturnPress = app->isKeyPressed(SDL_SCANCODE_RETURN);
@@ -65,27 +69,117 @@ namespace Tetris {
         this->lastDownPress = isPressed;
 
         // Check if we have enough players to start
-        if (players.size() <= 1) {
-            return;
-        }
+//        if (players.size() <= 1) {
+//            return;
+//        }
 
-        if(!gameStarted && isRetPressed && !wasRetPressed) {
+        if (!gameStarted && isRetPressed && !wasRetPressed) {
             gameStarted = true;
 
             // Send the start game message to all the clients
             NetworkMessage startGameMessage;
             startGameMessage.header.type = MessageType::GAME_START;
             server.sendMessageToAll(startGameMessage);
-
             return;
         }
 
-        if(gameStarted) {
+        if (gameStarted) {
+            Player &player = players[1];
+            if (!player.gameOver) {
+
+                // Check if any lines are happening. If there are, don't let anything else happen, shift the lines down
+                if (!lines.empty()) {
+                    player.speed.timer += ts;
+                    if (player.speed.timer >= player.speed.current) {
+                        for (auto &line: lines) {
+                            for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+                                int index = line * FIELD_WIDTH + x;
+                                player.field[index] = EMPTY_ID;
+                            }
+
+                            for (int y = line; y > 0; y--) {
+                                for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+                                    int index = y * FIELD_WIDTH + x;
+                                    player.field[index] = player.field[index - FIELD_WIDTH];
+                                }
+                            }
+                        }
+
+                        // Update lines cleared & clear the vector
+                        player.lines += lines.size();
+                        player.score += (1 << lines.size()) * 100;
+                        lines.clear();
+
+                        // Update timings to be the normal game timings TODO: store previous timings
+                        player.speed.timer = 0.0f;
+                        player.speed.current = 0.7f;
+                    }
+
+                    return;
+                }
+
+                // Input handling
+                checkInputs(inputs, app, player.piece, player.pos, player.speed, player.field);
+
+                player.speed.timer += ts;
+                if (player.speed.timer >= player.speed.current) {
+                    player.speed.timer = 0.0f;
+
+                    // Check if can move down
+                    if (Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y + 1, player.pos.rotation,
+                                          player.field)) {
+                        player.pos.y++;
+                    } else {
+                        // Place the piece
+                        Tetromino::place(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
+                                         player.field);
+
+                        // Check for lines
+                        for (int y = 0; y < Tetromino::TETROMINO_SIZE; y++) {
+                            if (player.pos.y + y >= FIELD_HEIGHT - 1)
+                                continue;
+
+                            bool line = true;
+
+                            // If a line has an empty slot
+                            for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+                                int index = (y + player.pos.y) * FIELD_WIDTH + x;
+                                if (player.field[index] == EMPTY_ID) {
+                                    line = false;
+                                }
+                            }
+
+                            if (line) {
+                                lines.push_back(player.pos.y + y);
+                                player.speed.timer = 0.0f;
+                                player.speed.current = 0.25f;
+                            }
+                        }
+
+                        // Generate new piece
+                        player.piece.current = player.piece.next;
+                        player.piece.next = engine() % 7;
+                        player.pos.x = FIELD_WIDTH / 2;
+                        player.pos.y = 0;
+                        player.pos.rotation = 0;
+                        player.pos.storedRotation = 0;
+                        player.speed.timer = 0.0f;
+                        player.piece.hasStored = false;
+                        inputs.leftDelay = INPUT_DELAY;
+                        inputs.rightDelay = INPUT_DELAY;
+                        inputs.downDelay = INPUT_DELAY;
+
+                        if (!Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
+                                               player.field))
+                            player.gameOver = true;
+                    }
+                }
+            }
 
             // Send our game state
             NetworkMessage gameStateMessage;
             gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
-            gameStateMessage << players[1];
+            gameStateMessage << player;
             server.sendMessageToAll(gameStateMessage);
         }
     }
@@ -94,7 +188,7 @@ namespace Tetris {
         MenuState::render(renderer, ts);
 
         // Render all the players in
-        if(!gameStarted)
+        if (!gameStarted)
             renderPlayers(renderer, players, holder);
         else {
             /*
@@ -104,16 +198,57 @@ namespace Tetris {
             int startX = 50;
             int startY = 150;
             int blockSize = 25;
-            std::vector<unsigned int> lines;
-            renderField(renderer, texture, startX, startY, players[1].field, lines, players[1].gameOver, blockSize);
+            Player &serverPlayer = players[1];
+
+            renderField(renderer, texture, startX, startY, serverPlayer.field, lines, serverPlayer.gameOver, blockSize);
+
+            // Then render the server's current piece and other values
+            // Render current piece in
+            renderPiece(renderer, texture, serverPlayer.pos.x, serverPlayer.pos.y, serverPlayer.piece.current,
+                        serverPlayer.pos.rotation,
+                        startX, startY, 255, blockSize);
+
+            // Render "ghost" piece (where it will land)
+            int ghostY = serverPlayer.pos.y;
+            while (Tetromino::canFit(serverPlayer.piece.current, serverPlayer.pos.x, ghostY + 1,
+                                     serverPlayer.pos.rotation,
+                                     serverPlayer.field)) {
+                ghostY++;
+            }
+            renderPiece(renderer, texture, serverPlayer.pos.x, ghostY, serverPlayer.piece.current,
+                        serverPlayer.pos.rotation, startX,
+                        startY, 50, blockSize);
+
+//            // Render the next piece under the score
+//            SDL_Rect textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 200, 150, 75};
+//            renderText(renderer, holder.font, "Next", {255, 255, 255, 255}, &textRect);
+//            renderPiece(renderer, texture, 0, 0, serverPlayer.piece.next, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
+//                        startY + 225, 100, blockSize);
+//
+//            // Render the stored piece directly under the next piece
+//            if (serverPlayer.storedPiece != INVALID_SHAPE) {
+//                textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 400, 150, 75};
+//                renderText(renderer, fontHolder.font, "Stored", {255, 255, 255, 255}, &textRect);
+//                renderPiece(renderer, holder, 0, 0, serverPlayer.storedPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
+//                            startY + 425, 100);
+//            }
 
             startX = startX + (FIELD_WIDTH * blockSize) + 20;
+            std::vector<unsigned int> oLines;
 
             // Render the other players in the server
-            for(auto & player : players) {
-                if(player.first == 1) continue;
+            for (auto &it: players) {
+                // ignore if it's the server (we rendered it above)
+                if (it.first == 1) continue;
+                Player player = it.second;
 
-                renderField(renderer, texture, startX, startY, player.second.field, lines, player.second.gameOver, blockSize / 2);
+                // Render the field
+                renderField(renderer, texture, startX, startY, player.field, oLines, player.gameOver, blockSize / 2);
+
+                // Render current piece in
+                renderPiece(renderer, texture, player.pos.x, player.pos.y, player.piece.current,
+                            player.pos.rotation, startX, startY, 255, blockSize / 2);
+
                 startX += (FIELD_WIDTH * blockSize / 2) + 20;
             }
         }

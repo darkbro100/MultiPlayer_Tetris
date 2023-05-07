@@ -71,7 +71,7 @@ namespace Tetris {
      */
     void renderPiece(SDL_Renderer *renderer, TextureHolder & holder, int x, int y, unsigned int piece, int rotation, int startX, int startY, int alpha = 255, int cellSize = CELL_SIZE);
 
-    void renderField(SDL_Renderer * renderer, TextureHolder & holder, int startX, int startY, uint8_t * field, std::vector<unsigned int> & lines, bool gameOver, int cellSize = CELL_SIZE);
+    void renderField(SDL_Renderer * renderer, TextureHolder & holder, int startX, int startY, const uint8_t * field, std::vector<unsigned int> & lines, bool gameOver, int cellSize = CELL_SIZE);
 
 }
 

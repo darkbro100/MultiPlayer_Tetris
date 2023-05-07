@@ -15,20 +15,20 @@ namespace Tetris {
         engine.seed(dev());
 
         player = {};
-        player.currentPiece = 5;
-        player.nextPiece = engine() % 7;
-        player.currentX = FIELD_WIDTH / 2;
-        player.currentY = 0;
-        player.currentRotation = 0;
-        player.storedRotation = 0;
-        player.currentSpeed = 0.7f;
-        player.currentSpeedTimer = 0.0f;
+        player.piece.current = 5;
+        player.piece.next = engine() % 7;
+        player.pos.x = FIELD_WIDTH / 2;
+        player.pos.y = 0;
+        player.pos.rotation = 0;
+        player.pos.storedRotation = 0;
+        player.speed.current = 0.7f;
+        player.speed.timer = 0.0f;
         player.linesCreated = 0;
         player.score = 0;
 
-        this->leftDelay = INPUT_DELAY;
-        this->rightDelay = INPUT_DELAY;
-        this->downDelay = INPUT_DELAY;
+        inputs.leftDelay = INPUT_DELAY;
+        inputs.rightDelay = INPUT_DELAY;
+        inputs.downDelay = INPUT_DELAY;
 
         // Initialize the field
         initField(player.field);
@@ -57,8 +57,8 @@ namespace Tetris {
 
         // Check if any lines are happening. If there are, don't let anything else happen, shift the lines down
         if (!player.lines.empty()) {
-            player.currentSpeedTimer += ts;
-            if (player.currentSpeedTimer >= player.currentSpeed) {
+            player.speed.timer += ts;
+            if (player.speed.timer >= player.speed.current) {
                 for (auto &line: player.lines) {
                     for (int x = 1; x < FIELD_WIDTH - 1; x++) {
                         int index = line * FIELD_WIDTH + x;
@@ -79,64 +79,67 @@ namespace Tetris {
                 player.lines.clear();
 
                 // Update timings to be the normal game timings TODO: store previous timings
-                player.currentSpeedTimer = 0.0f;
-                player.currentSpeed = 0.7f;
+                player.speed.timer = 0.0f;
+                player.speed.current = 0.7f;
             }
 
             return;
         }
 
         // Check inputs
-        checkInputs();
+        checkInputs(inputs, app, player.piece, player.pos, player.speed, player.field);
 
         // Game timings
-        player.currentSpeedTimer += ts;
-        if (player.currentSpeedTimer >= player.currentSpeed) {
-            player.currentSpeedTimer = 0.0f;
+        player.speed.timer += ts;
+        if (player.speed.timer >= player.speed.current) {
+            player.speed.timer = 0.0f;
 
             // Check if can move down
-            if (Tetromino::canFit(player.currentPiece, player.currentX, player.currentY + 1, player.currentRotation, player.field)) {
-                player.currentY++;
+            if (Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y + 1, player.pos.rotation,
+                                  player.field)) {
+                player.pos.y++;
             } else {
                 // Place the piece
-                Tetromino::place(player.currentPiece, player.currentX, player.currentY, player.currentRotation, player.field);
+                Tetromino::place(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
+                                 player.field);
 
                 // Check for lines
                 for (int y = 0; y < Tetromino::TETROMINO_SIZE; y++) {
-                    if (player.currentY + y >= FIELD_HEIGHT - 1)
+                    if (player.pos.y + y >= FIELD_HEIGHT - 1)
                         continue;
 
                     bool line = true;
 
                     // If a line has an empty slot
                     for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-                        int index = (y + player.currentY) * FIELD_WIDTH + x;
+                        int index = (y + player.pos.y) * FIELD_WIDTH + x;
                         if (player.field[index] == EMPTY_ID) {
                             line = false;
                         }
                     }
 
                     if (line) {
-                        player.lines.push_back(player.currentY + y);
-                        player.currentSpeedTimer = 0.0f;
-                        player.currentSpeed = 0.25f;
+                        player.lines.push_back(player.pos.y + y);
+                        player.speed.timer = 0.0f;
+                        player.speed.current = 0.25f;
                     }
                 }
 
                 // Generate new piece
-                player.currentPiece = player.nextPiece;
-                player.nextPiece = engine() % 7;
-                player.currentX = FIELD_WIDTH / 2;
-                player.currentY = 0;
-                player.currentRotation = 0;
-                player.storedRotation = 0;
-                player.currentSpeedTimer = 0.0f;
-                leftDelay = INPUT_DELAY;
-                rightDelay = INPUT_DELAY;
-                downDelay = INPUT_DELAY;
-                player.hasStored = false;
+                player.piece.current = player.piece.next;
+                player.piece.next = engine() % 7;
+                player.pos.x = FIELD_WIDTH / 2;
+                player.pos.y = 0;
+                player.pos.rotation = 0;
+                player.pos.storedRotation = 0;
+                player.speed.timer = 0.0f;
+                player.piece.hasStored = false;
+                inputs.leftDelay = INPUT_DELAY;
+                inputs.rightDelay = INPUT_DELAY;
+                inputs.downDelay = INPUT_DELAY;
 
-                if (!Tetromino::canFit(player.currentPiece, player.currentX, player.currentY, player.currentRotation, player.field))
+                if (!Tetromino::canFit(player.piece.current, player.pos.x, player.pos.y, player.pos.rotation,
+                                       player.field))
                     player.gameOver = true;
             }
         }
@@ -159,30 +162,36 @@ namespace Tetris {
 
         // Render the score
         textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 100, 150, 75};
-        renderText(renderer, fontHolder.font, "Score: " + std::to_string(player.score), {255, 255, 255, 255}, &textRect);
+        renderText(renderer, fontHolder.font, "Score: " + std::to_string(player.score), {255, 255, 255, 255},
+                   &textRect);
 
         // If the game isn't over... show the current piece, otherwise show a Game Over msg
         if (!player.gameOver) {
             // Render current piece in
-            renderPiece(renderer, holder, player.currentX, player.currentY, player.currentPiece, player.currentRotation, startX, startY);
+            renderPiece(renderer, holder, player.pos.x, player.pos.y, player.piece.current, player.pos.rotation,
+                        startX, startY);
 
             // Render "ghost" piece (where it will land)
-            int ghostY = player.currentY;
-            while (Tetromino::canFit(player.currentPiece, player.currentX, ghostY + 1, player.currentRotation, player.field)) {
+            int ghostY = player.pos.y;
+            while (Tetromino::canFit(player.piece.current, player.pos.x, ghostY + 1, player.pos.rotation,
+                                     player.field)) {
                 ghostY++;
             }
-            renderPiece(renderer, holder, player.currentX, ghostY, player.currentPiece, player.currentRotation, startX, startY, 50);
+            renderPiece(renderer, holder, player.pos.x, ghostY, player.piece.current, player.pos.rotation, startX,
+                        startY, 50);
 
             // Render the next piece under the score
             textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 200, 150, 75};
             renderText(renderer, fontHolder.font, "Next", {255, 255, 255, 255}, &textRect);
-            renderPiece(renderer, holder,  0, 0, player.nextPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 225, 100);
+            renderPiece(renderer, holder, 0, 0, player.piece.next, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
+                        startY + 225, 100);
 
             // Render the stored piece directly under the next piece
-            if (player.storedPiece != INVALID_SHAPE) {
+            if (player.piece.stored != INVALID_SHAPE) {
                 textRect = {startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 400, 150, 75};
                 renderText(renderer, fontHolder.font, "Stored", {255, 255, 255, 255}, &textRect);
-                renderPiece(renderer, holder,  0, 0, player.storedPiece, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10, startY + 425, 100);
+                renderPiece(renderer, holder, 0, 0, player.piece.stored, 0, startX + (FIELD_WIDTH * CELL_SIZE) + 10,
+                            startY + 425, 100);
             }
         } else {
             // Draw Game Over
@@ -196,110 +205,5 @@ namespace Tetris {
                         startY + (FIELD_HEIGHT * CELL_SIZE) / 2 + 50, 300, 100};
             renderText(renderer, fontHolder.font, "Press Enter", {255, 255, 255, 255}, &textRect);
         }
-    }
-
-    void GameMenuStateSP::checkInputs() {
-        // Updating variables based on input
-        bool isInstantPressed = app->isKeyPressed(INSTANT_DROP_KEY);
-        bool isRotatePressed = app->isKeyPressed(ROTATE_KEY);
-        bool isLeftPressed = app->isKeyPressed(LEFT_KEY);
-        bool isRightPressed = app->isKeyPressed(RIGHT_KEY);
-        bool isDownPressed = app->isKeyPressed(DOWN_KEY);
-        bool isStorePressed = app->isKeyPressed(STORE_KEY);
-
-        bool wasInstantPressed = this->wasInstantPressed;
-        bool wasRotatePressed = this->wasRotatePressed;
-        bool wasLeftPressed = this->wasLeftPressed;
-        bool wasRightPressed = this->wasRightPressed;
-        bool wasDownPressed = this->wasDownPressed;
-        bool wasStorePressed = this->wasStorePressed;
-
-        this->wasStorePressed = isStorePressed;
-        this->wasLeftPressed = isLeftPressed;
-        this->wasRightPressed = isRightPressed;
-        this->wasDownPressed = isDownPressed;
-        this->wasRotatePressed = isRotatePressed;
-        this->wasInstantPressed = isInstantPressed;
-
-        bool canPressRotate = isRotatePressed && !wasRotatePressed;
-        bool canPressLeft = lastPress.count(LEFT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[LEFT_KEY];
-        bool canPressRight = lastPress.count(RIGHT_KEY) == 0 || SDL_GetTicks64() > this->lastPress[RIGHT_KEY];
-        bool canPressDown = lastPress.count(DOWN_KEY) == 0 || SDL_GetTicks64() > this->lastPress[DOWN_KEY];
-
-        // First check if we can store a piece
-        if (!player.hasStored && isStorePressed && !wasStorePressed) {
-            unsigned int temp = player.storedPiece;
-            player.storedPiece = player.currentPiece;
-            player.currentPiece = temp;
-            player.hasStored = true;
-        }
-
-        // Input handling for moving forward/backward/down
-        if (isLeftPressed) {
-            // means that they are just tapping the arrow key once
-            if (!wasLeftPressed && Tetromino::canFit(player.currentPiece, player.currentX - 1, player.currentY, player.currentRotation, player.field)) {
-                player.currentX--;
-                lastPress[LEFT_KEY] = SDL_GetTicks64() + leftDelay;
-            } else if (wasLeftPressed && canPressLeft &&
-                       Tetromino::canFit(player.currentPiece, player.currentX - 1, player.currentY, player.currentRotation, player.field)) {
-                player.currentX--;
-                lastPress[LEFT_KEY] = SDL_GetTicks64() + leftDelay;
-                leftDelay /= leftDelay > 0 ? 2 : 1;
-            }
-
-        } else {
-            leftDelay = INPUT_DELAY;
-        }
-
-        if (isRightPressed) {
-
-            // means that they are just tapping the arrow key once
-            if (!wasRightPressed && Tetromino::canFit(player.currentPiece, player.currentX + 1, player.currentY, player.currentRotation, player.field)) {
-                player.currentX++;
-                lastPress[RIGHT_KEY] = SDL_GetTicks64() + rightDelay;
-            } else if (wasRightPressed && canPressRight &&
-                       Tetromino::canFit(player.currentPiece, player.currentX + 1, player.currentY, player.currentRotation, player.field)) {
-                player.currentX++;
-                lastPress[RIGHT_KEY] = SDL_GetTicks64() + rightDelay;
-                rightDelay /= rightDelay > 0 ? 2 : 1;
-            }
-
-        } else {
-            rightDelay = INPUT_DELAY;
-        }
-
-        if (isDownPressed) {
-
-            // means that they are just tapping the arrow key once
-            if (!wasDownPressed && Tetromino::canFit(player.currentPiece, player.currentX, player.currentY + 1, player.currentRotation, player.field)) {
-                player.currentY++;
-                lastPress[DOWN_KEY] = SDL_GetTicks64() + downDelay;
-            } else if (wasDownPressed && canPressDown &&
-                       Tetromino::canFit(player.currentPiece, player.currentX, player.currentY + 1, player.currentRotation, player.field)) {
-                player.currentY++;
-                lastPress[DOWN_KEY] = SDL_GetTicks64() + downDelay;
-                downDelay /= downDelay > 0 ? 2 : 1;
-            }
-
-        } else {
-            downDelay = INPUT_DELAY;
-        }
-
-        // Input handling for rotating
-        if (canPressRotate) {
-            player.storedRotation = (player.storedRotation + 1) % 4;
-            if (Tetromino::canFit(player.currentPiece, player.currentX, player.currentY, player.storedRotation, player.field)) {
-                player.currentRotation = player.storedRotation;
-            }
-        }
-
-        // When spacebar is pressed, the piece is dropped instantly and locked to the board
-        if (isInstantPressed && !wasInstantPressed) {
-            while (Tetromino::canFit(player.currentPiece, player.currentX, player.currentY + 1, player.currentRotation, player.field)) {
-                player.currentY++;
-            }
-            player.currentSpeedTimer = player.currentSpeed;
-        }
-
     }
 }

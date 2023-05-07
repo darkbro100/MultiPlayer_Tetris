@@ -34,6 +34,8 @@ namespace Tetris {
         FontHolder holder;
         TextureHolder texture;
         NetworkServer server;
+        InputHolder inputs{};
+
         bool lastDownPress = false, lastReturnPress = false;
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
         int selectedButton = 0;
@@ -41,6 +43,8 @@ namespace Tetris {
 
         std::map<uint32_t, Player> players;
         bool gameStarted = false;
+
+        std::vector<unsigned int> lines;
     };
 } // Tetris
 

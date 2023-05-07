@@ -35,7 +35,6 @@ namespace Tetris {
         void onConnect(std::shared_ptr<NetworkClient> & who);
         void onDisconnect(std::shared_ptr<NetworkClient> & who);
 
-
         bool lastDownPress = false, lastReturnPress = false;
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
         int selectedButton = 0;

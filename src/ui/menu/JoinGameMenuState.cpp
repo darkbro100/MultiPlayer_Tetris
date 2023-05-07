@@ -67,17 +67,11 @@ namespace Tetris {
         if(gameStarted) {
             // Send update msg every frame
             NetworkMessage updateMsg;
+
             updateMsg.header.type = MessageType::PLAYER_UPDATE;
             updateMsg << players[client->getId()];
             client->send(updateMsg);
         }
-
-        // cycle between menu buttons
-//        if (app->isKeyPressed(SDL_SCANCODE_DOWN) && !wasPressed) {
-//            selectedButton = (selectedButton + 1) % buttons.size();
-//        } else if (app->isKeyPressed(SDL_SCANCODE_UP) && !wasPressed) {
-//            selectedButton = (selectedButton - 1) % buttons.size();
-//        }
     }
 
     void JoinGameMenuState::render(SDL_Renderer *renderer, float ts) {
@@ -108,7 +102,7 @@ namespace Tetris {
             std::vector<unsigned int> lines;
             renderField(renderer, texture, startX, startY, players[client->getId()].field, lines, players[client->getId()].gameOver, blockSize);
 
-            startX = startX + (FIELD_WIDTH * blockSize) + 20;
+            startX = startX +  (FIELD_WIDTH * blockSize) + 20;
 
             // Render the other players in the server
             for(auto & player : players) {
@@ -141,16 +135,16 @@ namespace Tetris {
 
                 Player player{};
                 player.id = id;
-                player.currentPiece = 5;
-                player.nextPiece = engine() % 7;
-                player.currentX = FIELD_WIDTH / 2;
-                player.currentY = 0;
-//                player.currentRotation = 0;
-//                player.storedRotation = 0;
-                player.currentSpeed = 0.7f;
-//                player.currentSpeedTimer = 0.0f;
-//                player.linesCreated = 0;
-//                player.score = 0;
+                player.piece.current = 5;
+                player.piece.next = engine() % 7;
+                player.pos.x = FIELD_WIDTH / 2;
+                player.pos.y = 0;
+                player.pos.rotation = 0;
+                player.pos.storedRotation = 0;
+                player.speed.current = 0.7f;
+                player.speed.timer = 0.0f;
+                player.lines = 0;
+                player.score = 0;
                 initField(player.field);
                 players[id] = player;
 

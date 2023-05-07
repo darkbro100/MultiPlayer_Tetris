@@ -8,8 +8,12 @@
 #include "SDL.h"
 #include "Tetronimo.h"
 #include "../net/NetworkClient.h"
+#include <map>
 
 namespace Tetris {
+
+    // Forward declare
+    class App;
 
     const static int CELL_SIZE = 48;
     const static int TEXTURE_BORDER = 26;
@@ -29,30 +33,54 @@ namespace Tetris {
     const static int DOWN_KEY = SDL_SCANCODE_DOWN;
     const static int INSTANT_DROP_KEY = SDL_SCANCODE_SPACE;
 
+    struct InputHolder {
+        int leftDelay, rightDelay, downDelay;
+
+        bool wasStorePressed = false;
+        bool wasInstantPressed = false;
+        bool wasRotatePressed = false;
+        bool wasLeftPressed = false, wasRightPressed = false, wasDownPressed = false;
+        std::map<int, Uint64> lastPress;
+    };
+
+    struct PlayerPos {
+        int16_t x, y;
+        uint8_t rotation, storedRotation;
+    };
+
+    struct PlayerPiece {
+        uint8_t current, next, stored = INVALID_SHAPE;
+        bool hasStored = false;
+    };
+
+    struct PlayerSpeed {
+        float current, timer;
+    };
+
     struct Player {
-        uint32_t id;
-        uint16_t ping;
+        uint32_t id{};
+        uint16_t ping{};
 
-        uint8_t field[FIELD_WIDTH * FIELD_HEIGHT];
-        uint8_t currentPiece, nextPiece, storedPiece;
+        PlayerPos pos{};
+        PlayerPiece piece{};
+        PlayerSpeed speed{};
 
-        int16_t currentX, currentY;
+        uint8_t field[FIELD_WIDTH * FIELD_HEIGHT]{};
 
-        float currentSpeed;
+        uint32_t lines{}, score{};
 
-        bool hasStored, gameOver;
+        bool gameOver{};
     };
 
     struct SinglePlayer {
         uint32_t id;
         uint16_t ping;
 
+        PlayerPos pos{};
+        PlayerPiece piece{};
+        PlayerSpeed speed{};
+
         uint8_t field[FIELD_WIDTH * FIELD_HEIGHT];
-        uint8_t currentPiece, nextPiece, storedPiece, currentRotation, storedRotation;
-
-        int16_t currentX, currentY;
-
-        float currentSpeed, currentSpeedTimer;
 
         int linesCreated = 0;
         std::vector<unsigned int> lines;
@@ -66,6 +94,11 @@ namespace Tetris {
      * @param field Array of the field
      */
     void initField(uint8_t *field);
+
+    /**
+     * All the code for checking all the input related things is put here because it is a lot of code
+     */
+    void checkInputs(InputHolder &holder, App *app, PlayerPiece & piece, PlayerPos &pos, PlayerSpeed & speed, uint8_t * field);
 }
 
 #endif //MPTETRIS_GAMECOMMON_H
