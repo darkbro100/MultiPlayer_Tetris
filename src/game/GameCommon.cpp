@@ -56,10 +56,26 @@ namespace Tetris {
                 piece.stored = piece.current;
                 piece.current = piece.next;
                 piece.next = engine() % 7;
+
+                while(!Tetromino::canFit(piece.current, pos.x, pos.y, pos.rotation, field)) {
+                    if(pos.x > FIELD_WIDTH / 2) {
+                        pos.x--;
+                    } else {
+                        pos.x++;
+                    }
+                }
             } else {
                 unsigned int temp = piece.stored;
                 piece.stored = piece.current;
                 piece.current = temp;
+
+                while(!Tetromino::canFit(piece.current, pos.x, pos.y, pos.rotation, field)) {
+                    if(pos.x > FIELD_WIDTH / 2) {
+                        pos.x--;
+                    } else {
+                        pos.x++;
+                    }
+                }
             }
             piece.hasStored = true;
         }
@@ -127,10 +143,18 @@ namespace Tetris {
         // Input handling for rotating
         if (canPressRotate) {
             pos.storedRotation = (pos.storedRotation + 1) % 4;
-            if (Tetromino::canFit(piece.current, pos.x, pos.y, pos.storedRotation,
-                                  field)) {
-                pos.rotation = pos.storedRotation;
+            int tries = 0;
+            while(tries < 100 && !Tetromino::canFit(piece.current, pos.x, pos.y, pos.storedRotation, field)) {
+                if(pos.x > FIELD_WIDTH / 2) {
+                    pos.x--;
+                } else {
+                    pos.x++;
+                }
+
+                tries++;
             }
+
+            pos.rotation = pos.storedRotation;
         }
 
         // When spacebar is pressed, the piece is dropped instantly and locked to the board

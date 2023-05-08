@@ -86,7 +86,17 @@ namespace Tetris {
                 }
 
                 // Input handling
+                int16_t x = player->pos.x;
+                int16_t y = player->pos.y;
                 checkInputs(inputs, app, player->piece, player->pos, player->speed, player->field, engine);
+
+                // only send an update packet if the player has moved
+                if(x != player->pos.x || y != player->pos.y) {
+                    NetworkMessage gameStateMessage;
+                    gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
+                    gameStateMessage << *player;
+                    client->send(gameStateMessage);
+                }
 
                 player->speed.timer += ts;
                 if (player->speed.timer >= player->speed.current) {
@@ -96,6 +106,12 @@ namespace Tetris {
                     if (Tetromino::canFit(player->piece.current, player->pos.x, player->pos.y + 1, player->pos.rotation,
                                           player->field)) {
                         player->pos.y++;
+
+                        //send update packet
+                        NetworkMessage gameStateMessage;
+                        gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
+                        gameStateMessage << *player;
+                        client->send(gameStateMessage);
                     } else {
                         // Place the piece
                         Tetromino::place(player->piece.current, player->pos.x, player->pos.y, player->pos.rotation,
@@ -106,6 +122,12 @@ namespace Tetris {
 
                         // Generate new piece
                         resetPiece(player->piece, player->pos, player->speed, inputs, engine);
+
+                        // Send update packet because the field has been updated as well as some other vars
+                        NetworkMessage gameStateMessage;
+                        gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
+                        gameStateMessage << *player;
+                        client->send(gameStateMessage);
 
                         if (!Tetromino::canFit(player->piece.current, player->pos.x, player->pos.y,
                                                player->pos.rotation,
@@ -123,12 +145,6 @@ namespace Tetris {
                         }
                     }
                 }
-
-                // Send our game state
-                NetworkMessage gameStateMessage;
-                gameStateMessage.header.type = MessageType::PLAYER_UPDATE;
-                gameStateMessage << *player;
-                client->send(gameStateMessage);
             }
         }
     }
@@ -199,9 +215,12 @@ namespace Tetris {
                             startY, 50, blockSize);
             } else {
                 // Draw Game Over
+                int place = getPlace(placements, client->getId(), players.size());
+                std::string placeStr = formatPlacement(place);
+
                 SDL_Rect textRec = {startX + (FIELD_WIDTH * blockSize) / 2 - 100,
                                     startY + (FIELD_HEIGHT * blockSize) / 2 - 50, 200, 100};
-                renderText(renderer, font.font, "Lost", {255, 255, 255, 255}, &textRec);
+                renderText(renderer, font.font, place == 1 ? "Won" : "Lost", {255, 255, 255, 255}, &textRec);
 
                 // Draw placement directly under
                 textRec.y += textRec.h;
@@ -209,8 +228,6 @@ namespace Tetris {
                 textRec.h /= 2;
                 textRec.x += textRec.w / 2;
 
-                int place = getPlace(placements, client->getId(), players.size());
-                std::string placeStr = formatPlacement(place);
                 renderText(renderer, font.font, placeStr, {255, 255, 255, 255}, &textRec);
             }
 
@@ -230,9 +247,12 @@ namespace Tetris {
                                 it.second->pos.rotation, startX, startY, 255, blockSize / 2);
                 } else {
                     // Draw Game Over
+                    int place = getPlace(placements, it.second->id, players.size());
+                    std::string placeStr = formatPlacement(place);
+
                     SDL_Rect textRec = {startX + (FIELD_WIDTH * (blockSize / 2)) / 2 - 50,
                                         startY + (FIELD_HEIGHT * (blockSize / 2)) / 2 - 25, 100, 50};
-                    renderText(renderer, font.font, "Lost", {255, 255, 255, 255}, &textRec);
+                    renderText(renderer, font.font, place == 1 ? "Won" : "Lost", {255, 255, 255, 255}, &textRec);
 
                     // Draw placement directly under
                     textRec.y += textRec.h;
@@ -240,8 +260,6 @@ namespace Tetris {
                     textRec.h /= 2;
                     textRec.x += textRec.w / 2;
 
-                    int place = getPlace(placements, it.second->id, players.size());
-                    std::string placeStr = formatPlacement(place);
                     renderText(renderer, font.font, placeStr, {255, 255, 255, 255}, &textRec);
                 }
 
@@ -383,6 +401,8 @@ namespace Tetris {
             // Connect details
             const std::string &host = app->getInputText();
             const uint16_t port = 25000;
+
+            std::cout << "Host: " << host << " Port: " << port << std::endl;
 
             // Resolve hostname/ip-address into tangiable physical address
             asio::ip::tcp::resolver resolver(io_context);
