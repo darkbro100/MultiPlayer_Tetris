@@ -20,6 +20,7 @@ namespace Tetris {
     public:
         const static uint8_t CONNECTED = 1;
         const static uint8_t DISCONNECTED = 2;
+        const static uint8_t CONNECTING = 3;
         const static uint8_t WAITING = 0;
 
         NetworkClient(asio::io_context& asioContext, asio::ip::tcp::socket _socket, ConcurrentQueue<OwnedNetworkMessage> & _incoming) : ioContext(asioContext), socket(std::move(_socket)), incoming(_incoming) {};

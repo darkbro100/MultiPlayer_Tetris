@@ -76,6 +76,18 @@ namespace Tetris {
         bool isKeyPressed(int scanCode);
 
         /**
+         * Returns the current window
+         * @return Pointer to the current SDL_Window
+         */
+        SDL_Window * getWindow();
+
+        /**
+         * Returns the current renderer
+         * @return Const reference to the input string
+         */
+        const std::string & getInputText();
+
+        /**
          * Constant variables
          */
         const static Uint32 RENDER_FLAGS = SDL_RENDERER_ACCELERATED;
@@ -105,6 +117,8 @@ namespace Tetris {
         // SDL Related variables
         SDL_Window *window;
         SDL_Renderer *renderer;
+
+        std::string inputText;
     };
 }
 

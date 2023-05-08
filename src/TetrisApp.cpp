@@ -66,19 +66,19 @@ namespace Tetris {
 
         // Load textures for buttons & arrow
         holder = loadTexture("./assets/arrow.png", "arrow", renderer);
-        if(!holder.texture)
+        if (!holder.texture)
             this->initialized = false;
 
         loadedTextures.push_back(holder);
 
         holder = loadTexture("./assets/button_start.png", "start_button", renderer);
-        if(!holder.texture)
+        if (!holder.texture)
             this->initialized = false;
 
         loadedTextures.push_back(holder);
 
         holder = loadTexture("./assets/button_multiplayer.png", "mp_button", renderer);
-        if(!holder.texture)
+        if (!holder.texture)
             this->initialized = false;
 
         loadedTextures.push_back(holder);
@@ -127,6 +127,14 @@ namespace Tetris {
                     }
 
                     case SDL_KEYDOWN: {
+
+                        // handle copy, paste, and backspace
+                        if (event.key.keysym.scancode == SDL_SCANCODE_BACKSPACE && inputText.length() > 0) {
+                            inputText.pop_back();
+                        } else if (event.key.keysym.sym == SDLK_v && SDL_GetModState() & KMOD_CTRL) {
+                            inputText = SDL_GetClipboardText();
+                        }
+
                         // keyboard API for key pressed
                         keys[event.key.keysym.scancode] = true;
                         break;
@@ -137,13 +145,25 @@ namespace Tetris {
                         keys[event.key.keysym.scancode] = false;
                         break;
                     }
+
+                    case SDL_TEXTINPUT: {
+
+                        //Not copy or pasting
+                        if (!(SDL_GetModState() & KMOD_CTRL &&
+                              (event.text.text[0] == 'c' || event.text.text[0] == 'C' || event.text.text[0] == 'v' ||
+                               event.text.text[0] == 'V'))) {
+                            //Append character
+                            inputText += event.text.text;
+                        }
+                        break;
+                    }
                 }
             }
             // Update the state of the app, and then render it
             onUpdate(timestep);
 
             // clears the screen
-            SDL_SetRenderDrawColor(renderer, 0,0,0,0);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
             SDL_RenderClear(renderer);
 
             // render the app
@@ -184,7 +204,7 @@ namespace Tetris {
         return keys[scanCode];
     }
 
-    void App::changeState(const std::shared_ptr<MenuState> & newState) {
+    void App::changeState(const std::shared_ptr<MenuState> &newState) {
         this->currentState = newState;
     }
 
@@ -198,5 +218,13 @@ namespace Tetris {
         SDL_GetDesktopDisplayMode(0, &dm);
         w = dm.w;
         h = dm.h;
+    }
+
+    SDL_Window *App::getWindow() {
+        return window;
+    }
+
+    const std::string &App::getInputText() {
+        return inputText;
     }
 }

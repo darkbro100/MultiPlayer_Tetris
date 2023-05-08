@@ -25,27 +25,7 @@ namespace Tetris {
         // Ensure this is updated in case the user is already holding return
         lastReturnPress = app->isKeyPressed(SDL_SCANCODE_RETURN);
 
-        try {
-            // Connect details
-            const std::string &host = "127.0.0.1";
-            const uint16_t port = 25000;
-
-            // Resolve hostname/ip-address into tangiable physical address
-            asio::ip::tcp::resolver resolver(io_context);
-            asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
-
-            // Connect to server
-            client = std::make_shared<NetworkClient>(io_context, asio::ip::tcp::socket(io_context), incomingMessages);
-            client->onConnect([this](bool connected) {
-                connectionStatus = connected ? NetworkClient::CONNECTED : NetworkClient::DISCONNECTED;
-            });
-            client->onMessageReceive([this](NetworkMessage &message) { onMessage(message); });
-
-            client->connect(endpoints);
-        } catch (std::exception &what) {
-            std::cerr << "[JoinGameMenuState] Failed to connect to server: " << what.what() << std::endl;
-            connectionStatus = NetworkClient::DISCONNECTED;
-        }
+        SDL_StartTextInput();
     }
 
     void JoinGameMenuState::update(float ts) {
@@ -60,10 +40,21 @@ namespace Tetris {
         bool wasPressed = this->lastDownPress;
         this->lastDownPress = isPressed;
 
-        if (connectionStatus == NetworkClient::DISCONNECTED || !client->isSocketOpen()) {
+        // if the client ends up disconnecting, go back to the main menu
+        if((!client || !client->isSocketOpen()) && connectionStatus != NetworkClient::WAITING) {
+            std::shared_ptr<MainMenuState> mainMenu = std::make_shared<MainMenuState>(app);
+            mainMenu->loadComponents();
+            app->changeState(mainMenu);
             return;
         }
 
+        // once the client has input the host ip and pressed return, we can create a new connection
+        if(connectionStatus == NetworkClient::WAITING && isRetPressed && !wasRetPressed) {
+            attemptConnect();
+            return;
+        }
+
+        // normal game logic, once it has started
         if (gameStarted) {
             auto player = players[client->getId()];
 
@@ -146,10 +137,31 @@ namespace Tetris {
         MenuState::render(renderer, ts);
 
         SDL_Rect dst = {0, 100, 150, 50};
+
         if (connectionStatus == NetworkClient::WAITING) {
-            renderText(renderer, smallFont.font, "Status: Waiting", {100, 100, 100, 255}, &dst);
+
+            int width = 300, height = 100;
+            SDL_Rect center = {(App::WINDOW_WIDTH / 2) - (width / 2), (App::WINDOW_HEIGHT / 2) - (height / 2), width, height};
+
+            renderText(renderer, font.font, "Enter Host IP:", {255, 255, 255, 255}, &center);
+            center.y += center.h;
+
+            size_t length = app->getInputText().length();
+
+            // Scale the width/height of the text box based on the length of the text
+            center.w = length * 20;
+            center.h = 50;
+
+            // Shift so it remains center with the text above
+            center.x += (width - center.w) / 2;
+
+            renderText(renderer, smallFont.font, app->getInputText(), {100,100,100,255}, &center);
+            return; // make sure nothing is being rendered if we haven't created a client yet
         } else if (connectionStatus == NetworkClient::CONNECTED && client->isSocketOpen()) {
             renderText(renderer, smallFont.font, "Status: Connected", {0, 255, 0, 255}, &dst);
+        } else if(connectionStatus == NetworkClient::CONNECTING){
+            renderText(renderer, smallFont.font, "Status: Waiting", {100, 100, 100, 255}, &dst);
+            return;
         } else {
             renderText(renderer, smallFont.font, "Status: Failed", {255, 0, 0, 255},
                        &dst);
@@ -364,6 +376,30 @@ namespace Tetris {
 
     void JoinGameMenuState::onDisconnect(std::shared_ptr<NetworkClient> &who) {
 
+    }
+
+    void JoinGameMenuState::attemptConnect() {
+        try {
+            // Connect details
+            const std::string &host = app->getInputText();
+            const uint16_t port = 25000;
+
+            // Resolve hostname/ip-address into tangiable physical address
+            asio::ip::tcp::resolver resolver(io_context);
+            asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
+
+            // Connect to server
+            connectionStatus = NetworkClient::CONNECTING;
+            client = std::make_shared<NetworkClient>(io_context, asio::ip::tcp::socket(io_context), incomingMessages);
+            client->onConnect([this](bool connected) {
+                connectionStatus = connected ? NetworkClient::CONNECTED : NetworkClient::DISCONNECTED;
+            });
+            client->onMessageReceive([this](NetworkMessage &message) { onMessage(message); });
+            client->connect(endpoints);
+        } catch (std::exception &what) {
+            std::cerr << "[JoinGameMenuState] Failed to connect to server: " << what.what() << std::endl;
+            connectionStatus = NetworkClient::DISCONNECTED;
+        }
     }
 
 } // Tetris
