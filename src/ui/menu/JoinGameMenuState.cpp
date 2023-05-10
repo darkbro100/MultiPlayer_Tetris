@@ -22,9 +22,6 @@ namespace Tetris {
         std::random_device dev;
         engine.seed(dev());
 
-        // Ensure this is updated in case the user is already holding return
-        lastReturnPress = app->isKeyPressed(SDL_SCANCODE_RETURN);
-
         SDL_StartTextInput();
     }
 
@@ -36,10 +33,6 @@ namespace Tetris {
         bool wasRetPressed = this->lastReturnPress;
         this->lastReturnPress = isRetPressed;
 
-        bool isPressed = app->isKeyPressed(SDL_SCANCODE_DOWN) || app->isKeyPressed(SDL_SCANCODE_UP);
-        bool wasPressed = this->lastDownPress;
-        this->lastDownPress = isPressed;
-
         // if the client ends up disconnecting, go back to the main menu
         if((!client || !client->isSocketOpen()) && connectionStatus != NetworkClient::WAITING) {
             std::shared_ptr<MainMenuState> mainMenu = std::make_shared<MainMenuState>(app);
@@ -50,6 +43,7 @@ namespace Tetris {
 
         // once the client has input the host ip and pressed return, we can create a new connection
         if(connectionStatus == NetworkClient::WAITING && isRetPressed && !wasRetPressed) {
+            SDL_StopTextInput();
             attemptConnect();
             return;
         }

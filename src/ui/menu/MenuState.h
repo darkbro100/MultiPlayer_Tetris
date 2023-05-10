@@ -37,6 +37,9 @@ namespace Tetris {
         std::list<std::shared_ptr<AppComponent>> components;
     };
 
+    /**
+     * Represents the Main Menu of our application. Will simply have 2 buttons for SinglePlayer and Multiplayer, player can select each one using the arrow keys and then press enter/return to go into the game.
+     */
     class MainMenuState : public MenuState {
     public:
         explicit MainMenuState(App *app);

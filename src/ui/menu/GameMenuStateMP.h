@@ -9,6 +9,9 @@
 
 namespace Tetris {
 
+    /**
+     * Menu state representing once we press Multiplayer in the main menu. Will give the player the option to host or join a game
+     */
     class GameMenuStateMP : public MenuState {
     public:
         explicit GameMenuStateMP(App *app);
@@ -16,8 +19,19 @@ namespace Tetris {
         void update(float ts) override;
         void render(SDL_Renderer *renderer, float ts) override;
     private:
+        /**
+         * Determines the last arrow key and enter press the user did
+         */
         bool lastDownPress = false, lastReturnPress = false;
+
+        /**
+         * Holds all the buttons stored
+         */
         std::vector<std::shared_ptr<ButtonComponent>> buttons;
+
+        /**
+         * What button is currently selected?
+         */
         int selectedButton = 0;
     };
 

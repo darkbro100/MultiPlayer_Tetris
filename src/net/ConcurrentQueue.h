@@ -10,14 +10,45 @@
 #include <condition_variable>
 
 namespace Tetris {
+    /**
+     * A thread-safe queue implementation
+     * @tparam T TypeName to infer for the Queue
+     */
     template <typename T>
     class ConcurrentQueue {
     public:
+        /**
+         * Pushes a new item into the queue
+         * @param t Item to push
+         */
         void push(const T & t);
+
+        /**
+         * Pops an item from the queue
+         * @return Item popped
+         */
         T pop();
+
+        /**
+         * Returns the front of the queue
+         * @return Reference to the front of the queue
+         */
         const T & front();
+
+        /**
+         * Returns whether the queue is empty
+         * @return If queue is empty, true, false otherwise
+         */
         bool empty();
+
+        /**
+         * Clears the queue
+         */
         void clear();
+
+        /**
+         * Waits until the queue is not empty. Held by a conditional variables. Although in our server implementation we are full blocking it is nice to have as well if we want to multithread our game object.
+         */
         void wait();
     private:
         std::queue<T> queue{};

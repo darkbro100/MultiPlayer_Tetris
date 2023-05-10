@@ -21,12 +21,52 @@ namespace Tetris {
      */
     class AppComponent {
     public:
+        /**
+         * Constructor for AppComponent
+         * @param app Pointer to the App
+         * @param id ID representing this component
+         * @param x X position of component
+         * @param y Y position of component
+         * @param width Width of component
+         * @param height Height of component
+         */
         AppComponent(Tetris::App * app, const std::string & id, int x, int y, int width, int height) : app(app), id(id), x(x), y(y), width(width), height(height), enabled(true) {};
+
+        /**
+         * Gets the enabled state of this component
+         * @return True if this is running, false otherwise
+         */
         bool isEnabled() const;
+
+        /**
+         * Renders this component, given the renderer and the timestep
+         * @param renderer Pointer to the renderer
+         * @param timestep Timestep since last frame
+         */
         virtual void render(SDL_Renderer * renderer, float timestep) = 0;
+
+        /**
+         * Gets the x-position of this component
+         * @return X-Pos
+         */
         float getX() const;
+
+        /**
+         * Gets the y-position of this component
+         * @return Y-Pos
+         */
         float getY() const;
+
+        /**
+         * Gets the width of this component
+         * @return Width
+         */
         float getWidth() const;
+
+        /**
+         * Gets the height of this component
+         * @return Height
+         */
         float getHeight() const;
     protected:
         bool enabled;
@@ -35,20 +75,7 @@ namespace Tetris {
         std::string id;
     };
 
-    /*
-     * A simple text component
-     */
-    class TextComponent : public AppComponent {
-    public:
-        TextComponent(Tetris::App *app, const std::string & id, int x, int y, int width, int height, const std::string &text, const std::string & fontName);
-
-        void setText(const std::string & text);
-        void render(SDL_Renderer * renderer, float timestep) override;
-    private:
-        std::string text;
-        FontHolder holder;
-        SDL_Color color;
-    };
+    // Basic component implementations done here. These are the most common components that will be used in the game
 
     class UpdatingComponent : public AppComponent {
     public:

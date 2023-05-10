@@ -15,13 +15,9 @@
 
 namespace Tetris {
 
-    // Pieces initially drop every half second.
-    // Need to adjust how the tetrominos initially spawn
-    // Game board is too small?
-
-    // Forward Declare App Class
-    class App;
-
+    /**
+     * Represents the Menu relating to our SinglePlayer game. In terms of declarations, there is not too much to do since we just derive from our MenuState class
+     */
     class GameMenuStateSP : public MenuState {
     public:
         explicit GameMenuStateSP(App *app);
@@ -29,10 +25,24 @@ namespace Tetris {
         void update(float ts) override;
         void render(SDL_Renderer *renderer, float ts) override;
     private:
+        /**
+         * Input Holder, contains what we've pressed during the game
+         */
         InputHolder inputs{};
+
+        /**
+         * The TextureHolder for our tetromino block
+         */
         TextureHolder holder;
+
+        /**
+         * SinglePlayer Game Struct
+         */
         SinglePlayer player;
 
+        /**
+         * PRNG State
+         */
         std::mt19937 engine;
     };
 

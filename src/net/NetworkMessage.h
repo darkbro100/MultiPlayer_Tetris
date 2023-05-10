@@ -12,6 +12,9 @@ namespace Tetris {
     // Forward declaration
     class NetworkClient;
 
+    /**
+     * Used for representing the type of a message sent throughout our Network
+     */
     enum class MessageType {
         KEEP_ALIVE,
         PING,
@@ -29,6 +32,9 @@ namespace Tetris {
         PLAYER_WON
     };
 
+    /**
+     * Represents the header of a message that will be sent between the client and the server.
+     */
     struct NetworkMessageHeader {
         MessageType type;
         uint32_t messageSize;

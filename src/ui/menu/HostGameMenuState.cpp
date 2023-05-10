@@ -58,10 +58,6 @@ namespace Tetris {
         bool wasRetPressed = this->lastReturnPress;
         this->lastReturnPress = isRetPressed;
 
-        bool isPressed = app->isKeyPressed(SDL_SCANCODE_DOWN) || app->isKeyPressed(SDL_SCANCODE_UP);
-        bool wasPressed = this->lastDownPress;
-        this->lastDownPress = isPressed;
-
         // Check if we have enough players to start
         if (players.size() <= 1) {
             return;

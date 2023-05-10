@@ -55,6 +55,13 @@ namespace Tetris {
      */
     void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, Uint8 alpha = 255);
 
+    /**
+     * This renders our "lobby" state in a Multiplayer game, before the game is started. Will show all the players, including their pings
+     * @param renderer Pointer to the renderer
+     * @param players Reference to the map containing all the players
+     * @param holder FontHolder to use for rendering the text
+     * @param id ID of the client who is calling this function (default to the server)
+     */
     void renderPlayers(SDL_Renderer * renderer, std::unordered_map<uint32_t, std::shared_ptr<Player>> & players, FontHolder & holder, uint32_t id = 1);
 
     /**
@@ -71,6 +78,17 @@ namespace Tetris {
      */
     void renderPiece(SDL_Renderer *renderer, TextureHolder & holder, int x, int y, unsigned int piece, int rotation, int startX, int startY, int alpha = 255, int cellSize = CELL_SIZE);
 
+    /**
+     * Renders the field to the screen
+     * @param renderer Pointer to the renderer
+     * @param holder Holder to the Tetromino texture
+     * @param startX Where the field should begin on the actual screen ( screen coord x)
+     * @param startY Where the field should begin on the actual screen ( screen coord y)
+     * @param field Pointer to the field
+     * @param lines Vector containing the lines
+     * @param gameOver Whether or not the game has ended
+     * @param cellSize The size of each cell
+     */
     void renderField(SDL_Renderer * renderer, TextureHolder & holder, int startX, int startY, const uint8_t * field, std::vector<unsigned int> & lines, bool gameOver, int cellSize = CELL_SIZE);
 
 }

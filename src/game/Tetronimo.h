@@ -21,6 +21,9 @@ namespace Tetris {
          */
         const static int TOTAL_TETROMINOS = 7;
 
+        /**
+         * I-Shape Tetromino
+         */
         constexpr static unsigned int I_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 1, 1, 1, 1,
@@ -28,6 +31,9 @@ namespace Tetris {
                 0, 0, 0, 0
         };
 
+        /**
+         * J-Shape Tetromino
+         */
         constexpr static unsigned int J_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 1, 1, 1, 0,
@@ -35,6 +41,9 @@ namespace Tetris {
                 0, 0, 0, 0
         };
 
+        /**
+         * L-Shape Tetromino
+         */
         constexpr static unsigned int L_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 0, 1, 1, 1,
@@ -42,6 +51,9 @@ namespace Tetris {
                 0, 0, 0, 0
         };
 
+        /**
+         * O-Shape Tetromino
+         */
         constexpr static unsigned int O_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 0, 1, 1, 0,
@@ -49,6 +61,9 @@ namespace Tetris {
                 0, 0, 0, 0
         };
 
+        /**
+         * S-Shape Tetromino
+         */
         constexpr static unsigned int S_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 0, 1, 1, 0,
@@ -56,6 +71,9 @@ namespace Tetris {
                 0, 0, 0, 0
         };
 
+        /**
+         * T-Shape Tetromino
+         */
         constexpr static unsigned int T_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 0, 1, 1, 1,
@@ -63,6 +81,9 @@ namespace Tetris {
                 0, 0, 0, 0
         };
 
+        /**
+         * Z-Shape Tetromino
+         */
         constexpr static unsigned int Z_SHAPE[TETROMINO_SIZE * TETROMINO_SIZE] = {
                 0, 0, 0, 0,
                 1, 1, 0, 0,
